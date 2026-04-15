@@ -1,0 +1,15 @@
+{
+  "name": "a11ylens-tests",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^25.5.2",
+    "tsx": "^4.19.0"
+  },
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:watch": "npx tsx watch-and-test.ts"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "A11yLens",
+  "version": "1.0.0",
+  "description": "Accessibility checker with automated audits and tab stop visualization",
+  "permissions": ["activeTab", "scripting", "debugger", "windows", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {},
+  "web_accessible_resources": [
+    {
+      "resources": ["libs/axe.min.js", "content-inject.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

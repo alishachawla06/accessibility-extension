@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A11y Launch Pad</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1a1a2e;
+      background: #f5f6fa;
+    }
+    .launchpad { padding: 20px; }
+    .lp-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 20px; padding-bottom: 14px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .lp-logo { font-size: 28px; }
+    .lp-title { font-size: 16px; font-weight: 700; }
+    .lp-subtitle { font-size: 11px; color: #888; }
+    .lp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .lp-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 16px 10px; background: #fff;
+      border: 1px solid #e8e8e8; border-radius: 10px;
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .lp-card:hover {
+      background: #e3f2fd; border-color: #90caf9;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08); transform: translateY(-1px);
+    }
+    .lp-card:active { transform: translateY(0); }
+    .lp-icon { font-size: 28px; }
+    .lp-name { font-size: 12px; font-weight: 700; color: #1a1a2e; }
+    .lp-desc { font-size: 10px; color: #888; line-height: 1.3; }
+    .lp-card.lp-full {
+      grid-column: 1 / -1; flex-direction: row; gap: 12px;
+      padding: 14px 16px; text-align: left;
+    }
+    .lp-card.lp-full .lp-text { flex: 1; }
+    .lp-footer {
+      margin-top: 16px; padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+      text-align: center; font-size: 10px; color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="launchpad">
+    <div class="lp-header">
+      <span class="lp-logo">♿</span>
+      <div>
+        <div class="lp-title">Accessibility Insights</div>
+        <div class="lp-subtitle">Choose a tool to get started</div>
+      </div>
+    </div>
+    <div class="lp-grid">
+      <div class="lp-card" data-panel="auto-check">
+        <span class="lp-icon">🔍</span>
+        <span class="lp-name">Auto Check</span>
+        <span class="lp-desc">WCAG 2.2 audit</span>
+      </div>
+      <div class="lp-card" data-panel="tab-stops">
+        <span class="lp-icon">⇥</span>
+        <span class="lp-name">Tab Stops</span>
+        <span class="lp-desc">Keyboard tab order</span>
+      </div>
+      <div class="lp-card" data-panel="aria-tree">
+        <span class="lp-icon">🌳</span>
+        <span class="lp-name">Aria Tree</span>
+        <span class="lp-desc">Computed AX tree</span>
+      </div>
+      <div class="lp-card" data-panel="contrast">
+        <span class="lp-icon">🎨</span>
+        <span class="lp-name">Contrast</span>
+        <span class="lp-desc">Color contrast check</span>
+      </div>
+      <div class="lp-card lp-full" data-panel="pick-element">
+        <span class="lp-icon">🎯</span>
+        <div class="lp-text">
+          <span class="lp-name">Pick Element</span>
+          <span class="lp-desc">Click any element to inspect its accessibility properties</span>
+        </div>
+      </div>
+    </div>
+    <div class="lp-footer">Accessibility Extension v1.0</div>
+  </div>
+  <script src="popup-launch.js"></script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accessibility Extension</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <span class="logo">♿</span>
+        <span class="logo-text">A11y</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-panel="auto-check">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-label">Auto Check</span>
+        </button>
+        <button class="nav-btn" data-panel="tab-stops">
+          <span class="nav-icon">⇥</span>
+          <span class="nav-label">Tab Stops</span>
+        </button>
+        <button class="nav-btn" data-panel="aria-tree">
+          <span class="nav-icon">🌳</span>
+          <span class="nav-label">Aria Tree</span>
+        </button>
+        <button class="nav-btn" data-panel="contrast">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-label">Contrast</span>
+        </button>
+                <button class="nav-btn" data-panel="text-spacing">
+          <span class="nav-icon">Aa</span>
+          <span class="nav-label">Text Spacing</span>
+        </button>
+        <button class="nav-btn" data-panel="headings">
+          <span class="nav-icon">📑</span>
+          <span class="nav-label">Headings</span>
+        </button>
+        <button class="nav-btn" data-panel="landmarks">
+          <span class="nav-icon">🏷</span>
+          <span class="nav-label">Landmarks</span>
+        </button>
+        <button class="nav-btn" data-panel="form-labeller">
+          <span class="nav-icon">📝</span>
+          <span class="nav-label">Form Labels</span>
+        </button>
+        <button class="nav-btn" data-panel="name-calc">
+          <span class="nav-icon">🧪</span>
+          <span class="nav-label">Name Calc</span>
+        </button>
+        <button class="nav-btn" data-panel="alt-review">
+          <span class="nav-icon">🖼</span>
+          <span class="nav-label">Alt Review</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="main">
+      <!-- Auto Check Panel -->
+      <div class="panel active" id="panel-auto-check">
+        <div class="panel-header">
+          <h2>Automated Check</h2>
+          <p class="panel-desc">Run axe-core WCAG 2.2 audit on the current page</p>
+        </div>
+        <div class="scan-actions">
+          <div class="scan-actions-row">
+            <select id="select-wcag-level" class="wcag-dropdown">
+              <option value="aa">WCAG 2.2 AA</option>
+              <option value="aaa">WCAG 2.2 AAA</option>
+              <option value="bp">Best Practices</option>
+            </select>
+            <button id="btn-scan-page" class="btn btn-primary">Scan Full Page</button>
+          </div>
+          <button id="btn-pick-section" class="btn btn-section-pick">📌 Pick Section to Scan</button>
+        </div>
+        <div class="search-bar" style="display: none;" id="auto-check-search-container">
+          <input type="text" id="auto-check-search" placeholder="Search results (e.g. contrast, button) ..." />
+        </div>
+        <div id="scan-scope-badge" class="scan-scope-badge hidden"></div>
+        <div id="results-summary" class="pill-tab-bar hidden">
+          <button class="pill-tab pill-tab-violations active" data-filter="violations"><span class="pill-count" id="count-violations">0</span> Violations</button>
+          <button class="pill-tab pill-tab-passes" data-filter="passes"><span class="pill-count" id="count-passes">0</span> Passes</button>
+          <button class="pill-tab pill-tab-incomplete" data-filter="incomplete"><span class="pill-count" id="count-incomplete">0</span> Needs Review</button>
+        </div>
+        <div id="view-toggle" class="view-toggle hidden">
+          <button id="btn-view-flat" class="view-btn active">By Rule</button>
+          <button id="btn-view-component" class="view-btn">By Component</button>
+        </div>
+        <div id="results-list" class="results-list"></div>
+        <div id="loading" class="loading hidden"><div class="spinner"></div><span>Scanning page…</span></div>
+      </div>
+
+      <!-- Tab Stops Panel -->
+      <div class="panel" id="panel-tab-stops">
+        <div class="panel-header">
+          <h2>Tab Stops</h2>
+          <p class="panel-desc">Visualize the tab order of all focusable elements</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-show-tabs" class="btn btn-primary">Show Tab Stops</button>
+          <button id="btn-show-flow" class="btn btn-primary">Show Tab Flow</button>
+          <button id="btn-hide-tabs" class="btn btn-secondary hidden">Hide</button>
+          <button id="btn-pick-tab-component" class="btn btn-section-pick">📌 Pick Component</button>
+        </div>
+        <div id="tab-view-toggle" class="view-toggle hidden">
+          <button id="btn-tab-view-flat" class="view-btn active">Flat List</button>
+          <button id="btn-tab-view-component" class="view-btn">By Component</button>
+        </div>
+        <div id="tab-stats" class="tab-stats hidden">
+          <div class="summary-card"><span class="summary-count" id="count-focusable">0</span><span class="summary-label">Focusable Elements</span></div>
+        </div>
+        <div id="tab-list" class="results-list"></div>
+      </div>
+
+      <!-- Aria Tree Inspector Panel -->
+      <div class="panel" id="panel-aria-tree">
+        <div class="panel-header">
+          <h2>Aria Tree Inspector</h2>
+          <p class="panel-desc">Inspect accessibility trees and ARIA properties</p>
+        </div>
+        <div class="scan-actions">
+          <div class="scan-actions-row">
+            <button id="btn-pick-element" class="btn btn-section-pick" style="flex:1">🎯 Pick Element on Page</button>
+            <button id="btn-full-tree" class="btn btn-primary">Load Full Tree</button>
+          </div>
+        </div>
+        <div class="panel-actions" style="justify-content: space-between; margin-top: 12px;">
+          <input type="text" id="aria-search" placeholder="Filter by role, name, or tag..." class="aria-input" style="flex: 1; margin-right: 12px; margin-bottom: 0;" />
+          <label class="toggle-label" style="white-space: nowrap;"><input type="checkbox" id="chk-show-ignored"> Show ignored</label>
+        </div>
+        <div id="aria-selected" class="scan-scope-badge hidden"></div>
+        <div id="aria-loading" class="loading hidden"><div class="spinner"></div><span>Building tree…</span></div>
+        <div id="aria-tree-container" class="aria-tree-container"></div>
+      </div>
+
+      <!-- Color Contrast Panel -->
+      <div class="panel" id="panel-contrast">
+        <div class="panel-header">
+          <h2>Contrast Heatmap</h2>
+          <p class="panel-desc">Highlight text elements that fail WCAG color contrast ratios</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-contrast-aa" class="btn btn-primary">Check AA (4.5:1)</button>
+          <button id="btn-contrast-aaa" class="btn btn-primary">Check AAA (7:1)</button>
+          <button id="btn-contrast-hide" class="btn btn-secondary hidden">Clear Overlay</button>
+        </div>
+        <div id="contrast-loading" class="loading hidden"><div class="spinner"></div><span>Scanning contrast…</span></div>
+        <div id="contrast-summary" class="results-summary hidden">
+          <div class="summary-card violations"><span class="summary-count" id="contrast-fail-count">0</span><span class="summary-label">Failures</span></div>
+          <div class="summary-card passes"><span class="summary-count" id="contrast-pass-count">0</span><span class="summary-label">Pass</span></div>
+        </div>
+        <div id="contrast-list" class="results-list"></div>
+      </div>
+
+      <!-- Text Spacing Panel -->
+      <div class="panel" id="panel-text-spacing">
+        <div class="panel-header">
+          <h2>Text Spacing</h2>
+          <p class="panel-desc">Toggle WCAG 1.4.12 text spacing overrides to check content reflow</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-toggle-spacing" class="btn btn-primary">Toggle Text Spacing</button>
+          <button id="btn-spacing-screenshot" class="btn btn-secondary">📸 Screenshot</button>
+        </div>
+        <div id="spacing-status" class="spacing-status">
+          <span class="spacing-label">Status:</span> <span class="spacing-badge spacing-off">Off</span>
+        </div>
+        <div class="spacing-info">
+          <p><strong>WCAG 1.4.12</strong> requires content to remain readable with:</p>
+          <ul>
+            <li>Line height ≥ 1.5× font size</li>
+            <li>Letter spacing ≥ 0.12× font size</li>
+            <li>Word spacing ≥ 0.16× font size</li>
+            <li>Paragraph spacing ≥ 2× font size</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Headings Panel -->
+      <div class="panel" id="panel-headings">
+        <div class="panel-header">
+          <h2>Heading Outline</h2>
+          <p class="panel-desc">Scan heading structure and validate order</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-scan-headings" class="btn btn-primary">Scan Headings</button>
+          <button id="btn-show-heading-labels" class="btn btn-secondary">Show Labels on Page</button>
+        </div>
+        <div id="heading-stats" class="results-summary hidden"></div>
+        <div id="heading-loading" class="loading hidden"><div class="spinner"></div><span>Scanning headings…</span></div>
+        <div id="heading-tree-container" class="results-list"></div>
+      </div>
+
+      <!-- Landmarks Panel -->
+      <div class="panel" id="panel-landmarks">
+        <div class="panel-header">
+          <h2>Landmark Navigator</h2>
+          <p class="panel-desc">List page landmarks with duplicate detection</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-scan-landmarks" class="btn btn-primary">Scan Landmarks</button>
+          <button id="btn-show-landmark-labels" class="btn btn-secondary">Show Labels on Page</button>
+        </div>
+        <div id="landmark-stats" class="results-summary hidden"></div>
+        <div id="landmark-loading" class="loading hidden"><div class="spinner"></div><span>Scanning landmarks…</span></div>
+        <div id="landmark-list" class="results-list"></div>
+      </div>
+
+      <!-- Form Labeller Panel -->
+      <div class="panel" id="panel-form-labeller">
+        <div class="panel-header">
+          <h2>Form Labels</h2>
+          <p class="panel-desc">Check form fields for proper labelling and highlight orphans</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-scan-forms" class="btn btn-primary">Scan Form Fields</button>
+          <button id="btn-highlight-orphans" class="btn btn-secondary hidden">Highlight Orphans</button>
+        </div>
+        <div id="form-labeller-stats" class="results-summary hidden"></div>
+        <div id="form-labeller-loading" class="loading hidden"><div class="spinner"></div><span>Scanning forms…</span></div>
+        <div id="form-labeller-list" class="results-list"></div>
+      </div>
+
+      <!-- Name Calc Test Panel -->
+      <div class="panel" id="panel-name-calc">
+        <div class="panel-header">
+          <h2>Name Calculation Test</h2>
+          <p class="panel-desc">Find tricky accessible name patterns and compare with CDP-computed names</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-run-name-tests" class="btn btn-primary">Run Name Tests</button>
+        </div>
+        <div id="name-calc-stats" class="results-summary hidden"></div>
+        <div id="name-calc-loading" class="loading hidden"><div class="spinner"></div><span>Running tests…</span></div>
+        <div id="name-calc-list" class="results-list"></div>
+      </div>
+
+      <!-- Alt-Text Review Panel -->
+      <div class="panel" id="panel-alt-review">
+        <div class="panel-header">
+          <h2>Alt-Text Reviewer</h2>
+          <p class="panel-desc">Review all images — classify as Decorative or Informative and validate alt text</p>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-scan-images" class="btn btn-primary">Scan Images</button>
+        </div>
+        <div id="alt-review-stats" class="stat-strip hidden"></div>
+        <div id="alt-review-filter" class="pill-tab-bar hidden">
+          <button class="pill-tab pill-tab-alt-all alt-filter-btn active" data-filter="all">All</button>
+          <button class="pill-tab pill-tab-alt-informative alt-filter-btn" data-filter="informative">Informative</button>
+          <button class="pill-tab pill-tab-alt-decorative alt-filter-btn" data-filter="decorative">Decorative</button>
+          <button class="pill-tab pill-tab-alt-needs-review alt-filter-btn" data-filter="needs-review">Needs Review</button>
+          <button class="pill-tab pill-tab-alt-issues alt-filter-btn" data-filter="issues">Issues</button>
+        </div>
+        <div id="alt-review-loading" class="loading hidden"><div class="spinner"></div><span>Scanning images…</span></div>
+        <div id="alt-review-gallery" class="alt-gallery"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

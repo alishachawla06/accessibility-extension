@@ -1,0 +1,182 @@
+/* ─── Content Inject CSS ─────────────────────────────────────────────────────
+   Styles injected into target pages for overlays, markers, highlights, etc.
+   Injected once via chrome.scripting.insertCSS to avoid inline style duplication.
+   Uses a11y-ext-* prefix to avoid conflicts with page styles.
+─────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Section Picker (background.js drag rectangle) ────────────────────── */
+#a11y-ext-section-hl {
+  position: absolute;
+  z-index: 2147483646;
+  pointer-events: none;
+  border: 2px dashed #1976d2;
+  background: rgba(25, 118, 210, 0.1);
+  border-radius: 2px;
+}
+
+#a11y-ext-section-tip {
+  position: absolute;
+  z-index: 2147483647;
+  pointer-events: none;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+/* ─── Element Picker (picker-inject.js) ────────────────────────────────── */
+#a11y-ext-pick-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 2147483647;
+  cursor: crosshair;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+#a11y-ext-pick-highlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2147483646;
+  border: 2px solid #1565c0;
+  background: rgba(21, 101, 192, 0.12);
+  border-radius: 3px;
+  transition: all 0.08s ease;
+  display: none;
+}
+
+#a11y-ext-pick-hud {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2147483647;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 11px;
+  font-family: -apple-system, 'SF Mono', Monaco, Consolas, monospace;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+#a11y-ext-pick-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: #1565c0;
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  font-family: -apple-system, sans-serif;
+  font-weight: 600;
+  padding: 8px;
+  z-index: 2147483647;
+}
+
+/* ─── Tab Stop Markers (tab-stops.js) ──────────────────────────────────── */
+.a11y-ext-tab-marker {
+  width: 24px;
+  height: 24px;
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: -apple-system, sans-serif;
+  z-index: 2147483647;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Contrast Overlays (contrast.js) ──────────────────────────────────── */
+.a11y-ext-contrast-overlay {
+  z-index: 2147483645;
+  pointer-events: none;
+  border-radius: 3px;
+}
+
+.a11y-ext-contrast-badge {
+  z-index: 2147483646;
+  pointer-events: none;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: -apple-system, sans-serif;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* ─── Landmark Overlays (landmark-nav.js) ──────────────────────────────── */
+.a11y-ext-landmark-highlight {
+  position: absolute;
+  border: 3px solid #26a69a;
+  background: rgba(38, 166, 154, 0.1);
+  z-index: 2147483646;
+  pointer-events: none;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.a11y-ext-landmark-label {
+  position: absolute;
+  background: #26a69a;
+  color: #fff;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 2147483645;
+  pointer-events: none;
+  margin-top: -20px;
+}
+
+/* ─── Heading Labels (heading-outline.js) ──────────────────────────────── */
+.a11y-ext-heading-label {
+  position: absolute;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  z-index: 2147483647;
+  pointer-events: none;
+  font-family: -apple-system, sans-serif;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Contrast Pulse Animation ─────────────────────────────────────────── */
+@keyframes a11y-ext-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.5); }
+  70% { box-shadow: 0 0 0 12px rgba(211, 47, 47, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+}
+
+.a11y-ext-contrast-pulse {
+  animation: a11y-ext-pulse 1.5s ease-out;
+}
+
+/* ─── Element Highlight (click-to-locate from panel) ───────────────────── */
+.a11y-ext-highlight {
+  position: absolute;
+  z-index: 2147483646;
+  pointer-events: none;
+  border: 3px solid #1565c0;
+  background: rgba(21, 101, 192, 0.12);
+  border-radius: 4px;
+  animation: a11y-ext-highlight-fade 2.2s ease-out forwards;
+}
+
+@keyframes a11y-ext-highlight-fade {
+  0%   { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}

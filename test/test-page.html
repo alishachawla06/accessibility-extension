@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopEasy — A11yLens Test Page</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; background: #f9f9f9; }
+
+    /* ─── Layout ──────────────────────────────────────────────────────── */
+    .site-header { background: #1a1a2e; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .site-header h1 { font-size: 22px; }
+    .page-layout { display: flex; max-width: 1200px; margin: 0 auto; gap: 24px; padding: 24px; }
+    .page-main { flex: 1; }
+    .page-sidebar { width: 280px; flex-shrink: 0; }
+    .site-footer { background: #1a1a2e; color: #fff; padding: 20px 24px; margin-top: 40px; }
+
+    /* ─── Cards & Sections ────────────────────────────────────────────── */
+    .section-card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .section-card h2 { margin-bottom: 8px; }
+    .section-card h3 { margin: 12px 0 6px; }
+    .section-card p { margin-bottom: 8px; line-height: 1.5; }
+
+    /* ─── Nav ─────────────────────────────────────────────────────────── */
+    .primary-nav { background: #16213e; padding: 10px 24px; }
+    .primary-nav a, .secondary-nav a { color: #ccc; text-decoration: none; margin-right: 16px; font-size: 14px; }
+    .secondary-nav { background: #0f3460; padding: 8px 24px; }
+
+    /* ─── Product Hero ────────────────────────────────────────────────── */
+    .product-hero { display: flex; gap: 24px; align-items: flex-start; }
+    .product-hero .product-images { display: flex; flex-direction: column; gap: 8px; }
+    .product-hero img { max-width: 300px; border-radius: 8px; }
+    .product-info { flex: 1; }
+    .price { font-size: 28px; font-weight: 700; color: #2e7d32; margin: 8px 0; }
+
+    /* ─── Buttons ─────────────────────────────────────────────────────── */
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: #1976d2; color: #fff; }
+    .btn-fake { background: #e0e0e0; color: #333; display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: 600; }
+
+    /* ─── Forms ───────────────────────────────────────────────────────── */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+    }
+
+    /* ─── Contrast issues ─────────────────────────────────────────────── */
+    .low-contrast-aa { color: #aaaaaa; background: #ffffff; }
+    .low-contrast-orange { color: #ff9900; background: #ffff00; padding: 4px 8px; }
+    .low-contrast-blue { color: #ffffff; background: #89c4f4; padding: 4px 8px; border-radius: 4px; }
+
+    /* ─── Text Spacing traps ──────────────────────────────────────────── */
+    .clip-trap { height: 40px; overflow: hidden; border: 1px solid #ddd; padding: 8px; margin: 8px 0; background: #fafafa; border-radius: 4px; }
+    .overlap-trap { position: relative; height: 50px; border: 1px solid #ddd; margin: 8px 0; background: #fafafa; border-radius: 4px; }
+    .overlap-trap span { position: absolute; }
+    .overlap-trap .line1 { top: 8px; left: 8px; }
+    .overlap-trap .line2 { top: 22px; left: 8px; }
+
+    /* ─── Reviews ─────────────────────────────────────────────────────── */
+    .review-card { background: #fafafa; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #eee; }
+    .stars { color: #f9a825; font-size: 16px; }
+
+    /* ─── Related products ────────────────────────────────────────────── */
+    .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .product-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .product-card img { width: 100%; height: 120px; object-fit: cover; }
+    .product-card-body { padding: 10px; }
+
+    /* ─── Sidebar ─────────────────────────────────────────────────────── */
+    .sidebar-widget { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+    /* ─── Expected Issues Table ───────────────────────────────────────── */
+    .expected-issues { background: #fff3e0; border: 2px solid #f57c00; border-radius: 10px; padding: 16px 20px; margin: 20px 24px; }
+    .expected-issues h2 { color: #e65100; margin-bottom: 10px; }
+    .expected-issues table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .expected-issues th { text-align: left; background: #ffe0b2; padding: 6px 8px; }
+    .expected-issues td { padding: 5px 8px; border-bottom: 1px solid #ffe0b2; }
+    .expected-issues .issue-id { font-family: monospace; font-size: 11px; color: #e65100; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPECTED ISSUES TABLE — Cross-check extension results against this
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="expected-issues">
+  <h2>🧪 Expected Issues (QA Checklist)</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Panel</th><th>Issue</th><th>Element</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="issue-id">1</td><td>Auto Check</td><td>Fake button (div onclick, no role)</td><td><code>.btn-fake[onclick]</code></td></tr>
+      <tr><td class="issue-id">2</td><td>Auto Check</td><td>Image missing alt</td><td><code>img#no-alt-img</code></td></tr>
+      <tr><td class="issue-id">3</td><td>Auto Check</td><td>Low contrast text</td><td><code>.low-contrast-aa</code></td></tr>
+      <tr><td class="issue-id">4</td><td>Headings</td><td>No H1 at page start (section starts with H2)</td><td><code>h2 "Product Details"</code></td></tr>
+      <tr><td class="issue-id">5</td><td>Headings</td><td>Skipped level H2 → H4</td><td><code>h4 "Specifications"</code></td></tr>
+      <tr><td class="issue-id">6</td><td>Headings</td><td>Empty heading</td><td><code>h3#empty-heading</code></td></tr>
+      <tr><td class="issue-id">7</td><td>Landmarks</td><td>Duplicate nav without labels</td><td><code>nav.secondary-nav</code></td></tr>
+      <tr><td class="issue-id">8</td><td>Landmarks</td><td>No aria-label on primary nav</td><td><code>nav.primary-nav</code></td></tr>
+      <tr><td class="issue-id">9</td><td>Alt Review</td><td>Image missing alt attribute</td><td><code>img#no-alt-img</code></td></tr>
+      <tr><td class="issue-id">10</td><td>Alt Review</td><td>Generic alt text "image"</td><td><code>img#generic-alt-img</code></td></tr>
+      <tr><td class="issue-id">11</td><td>Alt Review</td><td>Alt text contains filename</td><td><code>img#filename-alt-img</code></td></tr>
+      <tr><td class="issue-id">12</td><td>Alt Review</td><td>Alt text too long (160+ chars)</td><td><code>img#long-alt-img</code></td></tr>
+      <tr><td class="issue-id">13</td><td>Alt Review</td><td>Input image missing label</td><td><code>input#submit-image</code></td></tr>
+      <tr><td class="issue-id">14</td><td>Contrast</td><td>Gray on white fails AA (3.5:1)</td><td><code>.low-contrast-aa</code></td></tr>
+      <tr><td class="issue-id">15</td><td>Contrast</td><td>Orange on yellow</td><td><code>.low-contrast-orange</code></td></tr>
+      <tr><td class="issue-id">16</td><td>Contrast</td><td>White on light blue</td><td><code>.low-contrast-blue</code></td></tr>
+      <tr><td class="issue-id">17</td><td>Form Labels</td><td>Input with no label</td><td><code>input#orphan-input</code></td></tr>
+      <tr><td class="issue-id">18</td><td>Form Labels</td><td>Select with placeholder only</td><td><code>select#orphan-select</code></td></tr>
+      <tr><td class="issue-id">19</td><td>Form Labels</td><td>Textarea with no label</td><td><code>textarea#orphan-textarea</code></td></tr>
+      <tr><td class="issue-id">20</td><td>Tab Stops</td><td>Positive tabindex</td><td><code>div#positive-tabindex</code></td></tr>
+      <tr><td class="issue-id">21</td><td>Tab Stops</td><td>Anchor without href</td><td><code>a#no-href-link</code></td></tr>
+      <tr><td class="issue-id">22</td><td>Text Spacing</td><td>Fixed height clips on spacing</td><td><code>.clip-trap</code></td></tr>
+      <tr><td class="issue-id">23</td><td>Text Spacing</td><td>Absolute position overlaps</td><td><code>.overlap-trap</code></td></tr>
+      <tr><td class="issue-id">24</td><td>Name Calc</td><td>aria-label overrides visible text</td><td><code>button#aria-label-override</code></td></tr>
+      <tr><td class="issue-id">25</td><td>Name Calc</td><td>aria-labelledby reference chain</td><td><code>button#labelledby-btn</code></td></tr>
+      <tr><td class="issue-id">26</td><td>Name Calc</td><td>Focusable inside aria-hidden</td><td><code>button#hidden-focusable</code></td></tr>
+      <tr><td class="issue-id">27</td><td>Aria Tree</td><td>Interactive div not focusable</td><td><code>div#fake-interactive[role="button"]</code></td></tr>
+      <tr><td class="issue-id">28</td><td>Aria Tree</td><td>Live region assertive</td><td><code>div#live-region</code></td></tr>
+      <tr><td class="issue-id">29</td><td>Aria Tree</td><td>aria-expanded without toggle</td><td><code>div#fake-disclosure</code></td></tr>
+      <tr><td class="issue-id">30</td><td>Alt Review</td><td>Correct decorative image (alt="")</td><td><code>img#decorative-img</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SITE HEADER — Landmark: banner
+     ═══════════════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <h1>ShopEasy</h1>
+  <div>
+    <!-- Issue #24: aria-label overrides visible text -->
+    <button id="aria-label-override" aria-label="Close dialog" class="btn btn-primary">X</button>
+    <button class="btn btn-primary">My Account</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     NAVIGATION — Landmark: navigation (duplicate issue #7, #8)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!-- Issue #8: No aria-label on primary nav -->
+<nav class="primary-nav">
+  <a href="#products">Products</a>
+  <a href="#deals">Deals</a>
+  <a href="#about">About</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<!-- Issue #7: Second nav, no aria-label — duplicate landmark -->
+<nav class="secondary-nav">
+  <a href="#new">New Arrivals</a>
+  <a href="#sale">Sale</a>
+  <!-- Issue #21: Anchor without href — not keyboard focusable -->
+  <a id="no-href-link">Help Center</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="page-layout">
+  <main class="page-main">
+
+    <!-- ─── Product Hero ──────────────────────────────────────────────── -->
+    <div class="section-card">
+      <!-- Issue #4: Section starts with H2, first heading on page (after H1 in header) is fine,
+           but inside main the outline skips — heading order check will flag H2→H4 -->
+      <h2>Product Details</h2>
+
+      <div class="product-hero">
+        <div class="product-images">
+          <!-- CORRECT: Informative image with good alt -->
+          <img src="https://picsum.photos/seed/headphones/300/200" alt="Premium wireless headphones in matte black with cushioned ear cups" data-expected="correct-informative">
+
+          <!-- Issue #9: Image with NO alt attribute -->
+          <img id="no-alt-img" src="https://picsum.photos/seed/side-view/300/200" data-expected-issue="Missing alt attribute">
+
+          <!-- Issue #30: Correct decorative image -->
+          <img id="decorative-img" src="https://picsum.photos/seed/divider/300/10" alt="" role="presentation" data-expected="correct-decorative">
+
+          <!-- Issue #10: Generic alt text -->
+          <img id="generic-alt-img" src="https://picsum.photos/seed/angle/300/200" alt="image" data-expected-issue="Generic alt text">
+
+          <!-- Issue #11: Filename in alt -->
+          <img id="filename-alt-img" src="https://picsum.photos/seed/box/300/200" alt="product-hero.jpg" data-expected-issue="Alt text contains filename">
+
+          <!-- Issue #12: Alt text too long -->
+          <img id="long-alt-img" src="https://picsum.photos/seed/detail/300/200" alt="This is an extremely detailed description of a product image showing premium wireless headphones from multiple angles including the left side, right side, front view, back view, and top-down perspective, with the charging cable visible and the carrying case in the background" data-expected-issue="Alt text too long">
+        </div>
+
+        <div class="product-info">
+          <p class="price">$299.99</p>
+          <p>Premium wireless headphones with active noise cancellation, 30-hour battery life, and studio-quality sound.</p>
+
+          <!-- Issue #5: Heading skip H2 → H4 -->
+          <h4 id="specs-heading">Specifications</h4>
+          <ul>
+            <li>Bluetooth 5.3</li>
+            <li>40mm drivers</li>
+            <li>USB-C charging</li>
+          </ul>
+
+          <!-- Issue #6: Empty heading -->
+          <h3 id="empty-heading"></h3>
+
+          <!-- CORRECT: Proper button -->
+          <button class="btn btn-primary" style="margin-top: 12px;">Add to Cart</button>
+
+          <!-- Issue #1: Fake button — div with onclick, no role/tabindex -->
+          <div class="btn-fake" onclick="alert('wishlisted')" data-expected-issue="Fake button, no role" style="margin-top: 8px;">♡ Add to Wishlist</div>
+
+          <!-- Issue #20: Positive tabindex -->
+          <div id="positive-tabindex" tabindex="5" style="padding: 8px; background: #e3f2fd; border-radius: 4px; margin-top: 8px; font-size: 13px;">
+            Quick view (tabindex=5)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Product Form ──────────────────────────────────────────────── -->
+    <div class="section-card">
+      <h2>Customize Your Order</h2>
+
+      <!-- CORRECT: Properly labeled input -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="you@example.com">
+      </div>
+
+      <!-- Issue #17: Input with NO label -->
+      <div class="form-group">
+        <input type="text" id="orphan-input" placeholder="Enter coupon code" data-expected-issue="No label">
+      </div>
+
+      <!-- Issue #18: Select with only placeholder option -->
+      <div class="form-group">
+        <select id="orphan-select" data-expected-issue="No label, placeholder only">
+          <option value="">Choose color...</option>
+          <option value="black">Black</option>
+          <option value="white">White</option>
+          <option value="blue">Blue</option>
+        </select>
+      </div>
+
+      <!-- Issue #19: Textarea with no label -->
+      <div class="form-group">
+        <textarea id="orphan-textarea" rows="3" placeholder="Special instructions..." data-expected-issue="No label"></textarea>
+      </div>
+
+      <!-- Issue #13: Input type="image" without alt/label -->
+      <input type="image" id="submit-image" src="https://picsum.photos/seed/go/80/30" data-expected-issue="Input image missing label" style="margin-top: 8px;">
+
+      <!-- Issue #25: aria-labelledby reference chain -->
+      <div style="margin-top: 12px;">
+        <span id="ref-label-1">Submit</span> <span id="ref-label-2">Order</span>
+        <button id="labelledby-btn" aria-labelledby="ref-label-1 ref-label-2" class="btn btn-primary" style="margin-left: 8px;">Go</button>
+      </div>
+    </div>
+
+    <!-- ─── Reviews (Contrast issues + Live region) ───────────────────── -->
+    <div class="section-card">
+      <h2>Customer Reviews</h2>
+
+      <!-- Issue #28: Live region -->
+      <div id="live-region" aria-live="assertive" aria-atomic="true" style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-bottom: 12px; font-size: 13px;">
+        3 new reviews just posted!
+      </div>
+
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p><strong>Great product!</strong></p>
+        <p>Best headphones I've ever owned. The noise cancellation is incredible.</p>
+        <!-- Issue #3, #14: Low contrast text — gray on white -->
+        <p class="low-contrast-aa" data-expected-issue="Fails AA contrast">Posted 3 days ago by SoundFan42</p>
+      </div>
+
+      <div class="review-card">
+        <div class="stars">★★★★☆</div>
+        <p><strong>Almost perfect</strong></p>
+        <!-- Issue #15: Orange on yellow contrast -->
+        <p class="low-contrast-orange" data-expected-issue="Orange on yellow fails contrast">🔥 Hot deal — limited time only!</p>
+        <!-- Issue #16: White on light blue -->
+        <p class="low-contrast-blue" data-expected-issue="White on blue fails contrast">Free shipping on orders over $50</p>
+      </div>
+
+      <!-- Issue #29: aria-expanded without real toggle behavior -->
+      <div id="fake-disclosure" aria-expanded="false" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-top: 8px; cursor: pointer; font-size: 13px;">
+        Show all 47 reviews ▸
+      </div>
+    </div>
+
+    <!-- ─── Related Products (more image + interactive issues) ────────── -->
+    <div class="section-card">
+      <h2>Related Products</h2>
+      <div class="product-grid">
+        <div class="product-card">
+          <img src="https://picsum.photos/seed/earbuds/200/120" alt="Wireless earbuds with charging case">
+          <div class="product-card-body">
+            <h3>Wireless Earbuds</h3>
+            <p>$79.99</p>
+            <!-- Issue #27: Interactive div, not focusable -->
+            <div id="fake-interactive" role="button" data-expected-issue="Interactive div not focusable" style="background:#1976d2;color:#fff;padding:8px;text-align:center;border-radius:4px;cursor:pointer;">
+              Add to Cart
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <!-- Non-img role="img" with aria-label — CORRECT -->
+          <div role="img" aria-label="Bar chart showing Q1 revenue growth of 25%" style="background:#e3f2fd;height:120px;display:flex;align-items:center;justify-content:center;font-size:40px;">📊</div>
+          <div class="product-card-body">
+            <h3>Audio Analytics</h3>
+            <p>$49.99/yr</p>
+          </div>
+        </div>
+        <div class="product-card">
+          <!-- Image with aria-labelledby — CORRECT -->
+          <img src="https://picsum.photos/seed/speaker/200/120" aria-labelledby="speaker-desc">
+          <div class="product-card-body">
+            <h3 id="speaker-desc">Portable Speaker</h3>
+            <p>$129.99</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Text Spacing Traps ────────────────────────────────────────── -->
+    <div class="section-card">
+      <h2>Shipping Information</h2>
+      <!-- Issue #22: Fixed-height container that clips on text spacing -->
+      <div class="clip-trap" data-expected-issue="Clips on text spacing">
+        Free standard shipping on all orders. Express shipping available for $9.99.
+        Delivery within 3-5 business days for standard, 1-2 business days for express.
+      </div>
+      <!-- Issue #23: Overlapping absolute-positioned text -->
+      <div class="overlap-trap" data-expected-issue="Text overlaps on spacing">
+        <span class="line1">Returns accepted within 30 days.</span>
+        <span class="line2">Full refund or exchange available.</span>
+      </div>
+      <!-- CORRECT: Flexible container -->
+      <p style="margin-top: 8px;">We ship worldwide. International shipping rates calculated at checkout.</p>
+    </div>
+
+    <!-- ─── Name Calc Tricky Patterns ─────────────────────────────────── -->
+    <div class="section-card">
+      <h2>Actions</h2>
+      <!-- aria-label override already in header: #aria-label-override -->
+      <!-- aria-labelledby already in form: #labelledby-btn -->
+
+      <!-- Issue #26: Focusable element inside aria-hidden -->
+      <div aria-hidden="true" style="border: 1px dashed #ccc; padding: 8px; border-radius: 4px; margin-top: 8px; opacity: 0.5;">
+        <p style="font-size: 12px; color: #999;">This section is aria-hidden but contains a focusable button:</p>
+        <button id="hidden-focusable" class="btn btn-primary" data-expected-issue="Focusable inside aria-hidden">Hidden Action</button>
+      </div>
+
+      <!-- CORRECT: Title attribute fallback -->
+      <input type="text" title="Search products" placeholder="Search..." style="margin-top: 8px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
+
+  </main>
+
+  <!-- ═════════════════════════════════════════════════════════════════════
+       SIDEBAR — Landmark: complementary
+       ═════════════════════════════════════════════════════════════════════ -->
+  <aside class="page-sidebar">
+    <div class="sidebar-widget">
+      <h3>Categories</h3>
+      <ul>
+        <li><a href="#headphones">Headphones</a></li>
+        <li><a href="#speakers">Speakers</a></li>
+        <li><a href="#accessories">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-widget">
+      <h3>Need Help?</h3>
+      <p>Contact our support team 24/7.</p>
+      <button class="btn btn-primary" style="width: 100%; margin-top: 8px;">Live Chat</button>
+    </div>
+  </aside>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FOOTER — Landmark: contentinfo
+     ═══════════════════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <p>&copy; 2026 ShopEasy. All rights reserved.</p>
+  <p style="font-size: 12px; margin-top: 4px;">Privacy Policy | Terms of Service</p>
+</footer>
+
+</body>
+</html>
