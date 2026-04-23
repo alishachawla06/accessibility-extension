@@ -9,11 +9,35 @@ export async function scanPanel(
   panelName: string,
   scanBtnId: string,
   resultSelector: string,
-  timeout = 10000
+  timeout = 10000,
+  subTab?: { type?: 'section' | 'sr'; name: string }
 ) {
   await clickNav(panelName);
+  if (subTab) {
+    const sel = subTab.type === 'sr'
+      ? `.sr-sub-tab[data-sr-tab="${subTab.name}"]`
+      : `.section-sub-tab[data-tab="${subTab.name}"]`;
+    await panelPage.click(sel);
+    await panelPage.waitForTimeout(300);
+  }
   await panelPage.click(`#${scanBtnId}`);
   await panelPage.waitForSelector(resultSelector, { timeout });
+}
+
+/**
+ * Click a section sub-tab within the current panel.
+ */
+export async function clickSubTab(page: Page, tabName: string, delay = 300) {
+  await page.click(`.section-sub-tab[data-tab="${tabName}"]`);
+  await page.waitForTimeout(delay);
+}
+
+/**
+ * Click a screen-reader sub-tab.
+ */
+export async function clickSrSubTab(page: Page, srTabName: string, delay = 300) {
+  await page.click(`.sr-sub-tab[data-sr-tab="${srTabName}"]`);
+  await page.waitForTimeout(delay);
 }
 
 /**

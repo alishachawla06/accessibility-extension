@@ -1,14 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "A11yLens",
+  "name": "A11yLens — Accessibility Inspector",
   "version": "1.0.0",
-  "description": "Accessibility checker with automated audits and tab stop visualization",
-  "permissions": ["activeTab", "scripting", "debugger", "windows", "tabs"],
+  "description": "Audit any web page for accessibility issues. Scorecard, ARIA tree, contrast, keyboard, mobile viewport, and screen reader simulation.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": ["activeTab", "scripting", "debugger", "windows", "tabs", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
-  "action": {},
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png"
+    },
+    "default_title": "Open A11yLens"
+  },
   "web_accessible_resources": [
     {
       "resources": ["libs/axe.min.js", "content-inject.css"],

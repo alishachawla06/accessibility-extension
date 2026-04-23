@@ -1,17 +1,19 @@
 import { test, expect } from '../fixtures/extension';
 import { scanPanel, clickFilter, getInnerHtml, countElements, getSummaryCount } from '../utils/helpers';
 
-const SCAN = { panel: 'alt-review', btn: 'btn-scan-images', result: '#alt-review-gallery .alt-card' } as const;
+const NAV = 'content';
+const SUB_TAB = { name: 'alt-review' };
+const SCAN = { btn: 'btn-scan-images', result: '#alt-review-gallery .alt-card' } as const;
 
 /** Scan images then switch to a filter tab. */
 async function scanAndFilter(panelPage: any, clickNav: any, filter: string) {
-  await scanPanel(panelPage, clickNav, SCAN.panel, SCAN.btn, SCAN.result);
+  await scanPanel(panelPage, clickNav, NAV, SCAN.btn, SCAN.result, 10000, SUB_TAB);
   await clickFilter(panelPage, `[data-filter="${filter}"]`);
 }
 
 test.describe('Alt Review Panel', () => {
   test('should scan and find all images with correct counts', async ({ panelPage, clickNav }) => {
-    await scanPanel(panelPage, clickNav, SCAN.panel, SCAN.btn, '#alt-review-stats:not(.hidden)');
+    await scanPanel(panelPage, clickNav, NAV, SCAN.btn, '#alt-review-stats:not(.hidden)', 10000, SUB_TAB);
 
     const statNum = await getSummaryCount(panelPage, '#alt-review-stats .stat-num:first-child');
     expect(statNum).toBeGreaterThanOrEqual(10);
@@ -40,7 +42,7 @@ test.describe('Alt Review Panel', () => {
   });
 
   test('should classify decorative and informative correctly', async ({ panelPage, clickNav }) => {
-    await scanPanel(panelPage, clickNav, SCAN.panel, SCAN.btn, SCAN.result);
+    await scanPanel(panelPage, clickNav, NAV, SCAN.btn, SCAN.result, 10000, SUB_TAB);
 
     await clickFilter(panelPage, '[data-filter="decorative"]');
     expect(await countElements(panelPage, SCAN.result)).toBeGreaterThanOrEqual(1);

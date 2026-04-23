@@ -1,8 +1,38 @@
 // ─── Background Service Worker ──────────────────────────────────────────────
 // Uses Chrome DevTools Protocol (CDP) to get the real computed accessibility tree.
+// CDP Session Manager — shared debugger sessions across features (AX tree, mobile emulation, color vision).
 
 let panelWindowId = null;
 let sourceWindowId = null;
+
+// ─── CDP Session Manager ────────────────────────────────────────────────────
+// Chrome allows only one debugger session per tab. Multiple features (AX tree,
+// mobile emulation, color vision) share sessions via refcount.
+const debugSessions = new Map(); // tabId → { refcount, emulation: bool, vision: string|null }
+
+async function ensureDebuggerAttached(tabId) {
+  if (debugSessions.has(tabId)) {
+    debugSessions.get(tabId).refcount++;
+    return;
+  }
+  await chrome.debugger.attach({ tabId }, '1.3');
+  debugSessions.set(tabId, { refcount: 1, emulation: false, vision: null });
+}
+
+async function releaseDebugger(tabId) {
+  const sess = debugSessions.get(tabId);
+  if (!sess) return;
+  sess.refcount--;
+  if (sess.refcount <= 0 && !sess.emulation && !sess.vision) {
+    debugSessions.delete(tabId);
+    try { await chrome.debugger.detach({ tabId }); } catch (_) {}
+  }
+}
+
+// Clean up if user opens DevTools (force-detaches debugger)
+chrome.debugger.onDetach.addListener((source) => {
+  if (source.tabId) debugSessions.delete(source.tabId);
+});
 
 function createPanelWindow(panel, openerWindowId) {
   const url = chrome.runtime.getURL('popup/panel.html' + (panel ? '#' + panel : ''));
@@ -43,6 +73,14 @@ chrome.action.onClicked.addListener((tab) => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'openPanel') {
     createPanelWindow(msg.panel, msg.windowId);
+    return;
+  }
+  if (msg.type === 'mktStarted') {
+    // Focus the target tab and close the panel window so the user can start tabbing
+    chrome.tabs.update(msg.tabId, { active: true });
+    if (panelWindowId !== null) {
+      chrome.windows.remove(panelWindowId);
+    }
     return;
   }
   if (msg.type === 'getTargetTab') {
@@ -122,7 +160,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       level: msg.level
     };
     // Re-open panel automatically
-    createPanelWindow(pickedSectionData.from === 'tab-stops' ? 'tab-stops' : 'auto-check', null);
+    createPanelWindow(pickedSectionData.from === 'tab-stops' ? 'keyboard' : 'auto-check', null);
     return;
   }
   if (msg.type === 'getPickedSection') {
@@ -134,6 +172,75 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
     sendResponse(result || null);
     return;
+  }
+  // ─── Device Emulation (Mobile Viewport) ────────────────────────────────
+  if (msg.type === 'setDeviceEmulation') {
+    (async () => {
+      try {
+        const tabId = msg.tabId;
+        await ensureDebuggerAttached(tabId);
+        const sess = debugSessions.get(tabId);
+        sess.emulation = true;
+        const d = { tabId };
+        await chrome.debugger.sendCommand(d, 'Emulation.setDeviceMetricsOverride', {
+          width: msg.width, height: msg.height,
+          deviceScaleFactor: msg.deviceScaleFactor || 2,
+          mobile: msg.mobile !== false
+        });
+        await chrome.debugger.sendCommand(d, 'Emulation.setTouchEmulationEnabled', { enabled: true });
+        if (msg.userAgent) {
+          await chrome.debugger.sendCommand(d, 'Emulation.setUserAgentOverride', { userAgent: msg.userAgent });
+        }
+        sendResponse({ success: true });
+      } catch (e) { sendResponse({ success: false, error: e.message }); }
+    })();
+    return true;
+  }
+  if (msg.type === 'clearDeviceEmulation') {
+    (async () => {
+      try {
+        const tabId = msg.tabId;
+        const sess = debugSessions.get(tabId);
+        if (sess) {
+          const d = { tabId };
+          await chrome.debugger.sendCommand(d, 'Emulation.clearDeviceMetricsOverride');
+          await chrome.debugger.sendCommand(d, 'Emulation.setTouchEmulationEnabled', { enabled: false });
+          sess.emulation = false;
+          await releaseDebugger(tabId);
+        }
+        sendResponse({ success: true });
+      } catch (e) { sendResponse({ success: false, error: e.message }); }
+    })();
+    return true;
+  }
+  // ─── Color Vision Deficiency ───────────────────────────────────────────
+  if (msg.type === 'setVisionDeficiency') {
+    (async () => {
+      try {
+        const tabId = msg.tabId;
+        await ensureDebuggerAttached(tabId);
+        const sess = debugSessions.get(tabId);
+        sess.vision = msg.deficiency;
+        await chrome.debugger.sendCommand({ tabId }, 'Emulation.setEmulatedVisionDeficiency', { type: msg.deficiency });
+        sendResponse({ success: true });
+      } catch (e) { sendResponse({ success: false, error: e.message }); }
+    })();
+    return true;
+  }
+  if (msg.type === 'clearVisionDeficiency') {
+    (async () => {
+      try {
+        const tabId = msg.tabId;
+        const sess = debugSessions.get(tabId);
+        if (sess) {
+          await chrome.debugger.sendCommand({ tabId }, 'Emulation.setEmulatedVisionDeficiency', { type: 'none' });
+          sess.vision = null;
+          await releaseDebugger(tabId);
+        }
+        sendResponse({ success: true });
+      } catch (e) { sendResponse({ success: false, error: e.message }); }
+    })();
+    return true;
   }
 });
 
@@ -294,8 +401,7 @@ function pickSectionInTab({ wcagLevel }) {
 async function getAXTree(tabId, selector) {
   const debuggee = { tabId };
 
-  // Attach debugger
-  await chrome.debugger.attach(debuggee, '1.3');
+  await ensureDebuggerAttached(tabId);
 
   try {
     // Enable accessibility domain
@@ -342,12 +448,7 @@ async function getAXTree(tabId, selector) {
     const { tagMap, attrMap } = await resolveTagNames(result.nodes, debuggee);
     return buildNestedTree(result.nodes, null, debuggee, tagMap, attrMap);
   } finally {
-    // Always detach
-    try {
-      await chrome.debugger.detach(debuggee);
-    } catch (e) {
-      // already detached
-    }
+    await releaseDebugger(tabId);
   }
 }
 
@@ -559,7 +660,7 @@ function extractValue(axValue) {
  */
 async function getAXTreeForPick(tabId, pickedSelector) {
   const debuggee = { tabId };
-  await chrome.debugger.attach(debuggee, '1.3');
+  await ensureDebuggerAttached(tabId);
 
   try {
     await chrome.debugger.sendCommand(debuggee, 'Accessibility.enable');
@@ -601,7 +702,7 @@ async function getAXTreeForPick(tabId, pickedSelector) {
     const tree = buildNestedTree(result.nodes, null, debuggee, tagMap, attrMap);
     return { tree, targetBackendId };
   } finally {
-    try { await chrome.debugger.detach(debuggee); } catch (e) {}
+    await releaseDebugger(tabId);
   }
 }
 
@@ -611,7 +712,7 @@ async function getAXTreeForPick(tabId, pickedSelector) {
  */
 async function getAccessibleNames(tabId, selectors) {
   const debuggee = { tabId };
-  await chrome.debugger.attach(debuggee, '1.3');
+  await ensureDebuggerAttached(tabId);
 
   try {
     await chrome.debugger.sendCommand(debuggee, 'Accessibility.enable');
@@ -650,6 +751,6 @@ async function getAccessibleNames(tabId, selectors) {
     }
     return results;
   } finally {
-    try { await chrome.debugger.detach(debuggee); } catch (e) {}
+    await releaseDebugger(tabId);
   }
 }

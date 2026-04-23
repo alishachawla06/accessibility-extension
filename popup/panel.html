@@ -3,261 +3,654 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Accessibility Extension</title>
+  <title>A11yLens — Accessibility Extension</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="app">
     <div class="sidebar">
-      <div class="sidebar-header">
-        <span class="logo">♿</span>
-        <span class="logo-text">A11y</span>
+      <div class="sidebar-header" role="banner">
+        <span class="logo" aria-hidden="true">♿</span>
+        <h1 class="logo-text">A11y</h1>
       </div>
-      <nav class="sidebar-nav">
-        <button class="nav-btn active" data-panel="auto-check">
-          <span class="nav-icon">🔍</span>
-          <span class="nav-label">Auto Check</span>
+      <nav class="sidebar-nav" aria-label="Main sections">
+        <button class="nav-btn" data-panel="scorecard">
+          <span class="nav-icon" aria-hidden="true">✓</span>
+          <span class="nav-label">Score</span>
         </button>
-        <button class="nav-btn" data-panel="tab-stops">
-          <span class="nav-icon">⇥</span>
-          <span class="nav-label">Tab Stops</span>
+        <button class="nav-btn active" data-panel="scan">
+          <span class="nav-icon" aria-hidden="true">⚡</span>
+          <span class="nav-label">Scan</span>
         </button>
-        <button class="nav-btn" data-panel="aria-tree">
-          <span class="nav-icon">🌳</span>
-          <span class="nav-label">Aria Tree</span>
+        <button class="nav-btn" data-panel="structure">
+          <span class="nav-icon" aria-hidden="true">☰</span>
+          <span class="nav-label">Structure</span>
         </button>
-        <button class="nav-btn" data-panel="contrast">
-          <span class="nav-icon">🎨</span>
-          <span class="nav-label">Contrast</span>
+        <button class="nav-btn" data-panel="content">
+          <span class="nav-icon" aria-hidden="true">¶</span>
+          <span class="nav-label">Content</span>
         </button>
-                <button class="nav-btn" data-panel="text-spacing">
-          <span class="nav-icon">Aa</span>
-          <span class="nav-label">Text Spacing</span>
+        <button class="nav-btn" data-panel="keyboard">
+          <span class="nav-icon" aria-hidden="true">⇥</span>
+          <span class="nav-label">Keyboard</span>
         </button>
-        <button class="nav-btn" data-panel="headings">
-          <span class="nav-icon">📑</span>
-          <span class="nav-label">Headings</span>
+        <button class="nav-btn" data-panel="visual">
+          <span class="nav-icon" aria-hidden="true">◐</span>
+          <span class="nav-label">Visual</span>
         </button>
-        <button class="nav-btn" data-panel="landmarks">
-          <span class="nav-icon">🏷</span>
-          <span class="nav-label">Landmarks</span>
+        <button class="nav-btn" data-panel="screen-reader">
+          <span class="nav-icon" aria-hidden="true">◉</span>
+          <span class="nav-label">Screen Reader</span>
         </button>
-        <button class="nav-btn" data-panel="form-labeller">
-          <span class="nav-icon">📝</span>
-          <span class="nav-label">Form Labels</span>
+        <button class="nav-btn" data-panel="monitoring">
+          <span class="nav-icon" aria-hidden="true">◈</span>
+          <span class="nav-label">Monitor</span>
         </button>
-        <button class="nav-btn" data-panel="name-calc">
-          <span class="nav-icon">🧪</span>
-          <span class="nav-label">Name Calc</span>
+        <button class="nav-btn" data-panel="mobile">
+          <span class="nav-icon" aria-hidden="true">◻</span>
+          <span class="nav-label">Mobile</span>
         </button>
-        <button class="nav-btn" data-panel="alt-review">
-          <span class="nav-icon">🖼</span>
-          <span class="nav-label">Alt Review</span>
+        <button class="nav-btn" data-panel="history">
+          <span class="nav-icon" aria-hidden="true">⏱</span>
+          <span class="nav-label">History</span>
         </button>
       </nav>
     </div>
 
-    <div class="main">
-      <!-- Auto Check Panel -->
-      <div class="panel active" id="panel-auto-check">
+    <main class="main" role="main">
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SCORECARD PANEL                                                   -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-scorecard">
         <div class="panel-header">
-          <h2>Automated Check</h2>
-          <p class="panel-desc">Run axe-core WCAG 2.2 audit on the current page</p>
+          <h2>Accessibility Scorecard</h2>
+          <p class="panel-desc">Run all checks and get a scored report with plain findings</p>
         </div>
-        <div class="scan-actions">
-          <div class="scan-actions-row">
-            <select id="select-wcag-level" class="wcag-dropdown">
-              <option value="aa">WCAG 2.2 AA</option>
-              <option value="aaa">WCAG 2.2 AAA</option>
-              <option value="bp">Best Practices</option>
-            </select>
-            <button id="btn-scan-page" class="btn btn-primary">Scan Full Page</button>
+        <div class="section-sub-panel active" data-panel="scorecard-main">
+          <p class="sr-sub-desc">Runs axe-core audit, heading structure, landmark coverage, contrast, keyboard, and alt text checks — then combines everything into a single accessibility score.</p>
+          <div class="panel-actions" style="display:flex;gap:8px">
+            <button id="btn-run-scorecard" class="btn btn-primary" style="flex:1">Run Full Scorecard</button>
           </div>
-          <button id="btn-pick-section" class="btn btn-section-pick">📌 Pick Section to Scan</button>
+          <div id="scorecard-loading" class="loading hidden"><div class="spinner"></div><span>Running all checks…</span></div>
+          <div id="scorecard-grade" class="scorecard-grade hidden"></div>
+          <div id="scorecard-categories" class="scorecard-categories hidden"></div>
+          <div id="scorecard-details" class="results-list" tabindex="0" role="region" aria-label="Scorecard details"></div>
         </div>
-        <div class="search-bar" style="display: none;" id="auto-check-search-container">
-          <input type="text" id="auto-check-search" placeholder="Search results (e.g. contrast, button) ..." />
-        </div>
-        <div id="scan-scope-badge" class="scan-scope-badge hidden"></div>
-        <div id="results-summary" class="pill-tab-bar hidden">
-          <button class="pill-tab pill-tab-violations active" data-filter="violations"><span class="pill-count" id="count-violations">0</span> Violations</button>
-          <button class="pill-tab pill-tab-passes" data-filter="passes"><span class="pill-count" id="count-passes">0</span> Passes</button>
-          <button class="pill-tab pill-tab-incomplete" data-filter="incomplete"><span class="pill-count" id="count-incomplete">0</span> Needs Review</button>
-        </div>
-        <div id="view-toggle" class="view-toggle hidden">
-          <button id="btn-view-flat" class="view-btn active">By Rule</button>
-          <button id="btn-view-component" class="view-btn">By Component</button>
-        </div>
-        <div id="results-list" class="results-list"></div>
-        <div id="loading" class="loading hidden"><div class="spinner"></div><span>Scanning page…</span></div>
       </div>
 
-      <!-- Tab Stops Panel -->
-      <div class="panel" id="panel-tab-stops">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SCAN PANEL                                                        -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel active" id="panel-scan">
         <div class="panel-header">
-          <h2>Tab Stops</h2>
-          <p class="panel-desc">Visualize the tab order of all focusable elements</p>
+          <h2>Automated Scan</h2>
+          <p class="panel-desc">Run axe-core WCAG 2.2 audit on the full page or a picked section</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-show-tabs" class="btn btn-primary">Show Tab Stops</button>
-          <button id="btn-show-flow" class="btn btn-primary">Show Tab Flow</button>
-          <button id="btn-hide-tabs" class="btn btn-secondary hidden">Hide</button>
-          <button id="btn-pick-tab-component" class="btn btn-section-pick">📌 Pick Component</button>
-        </div>
-        <div id="tab-view-toggle" class="view-toggle hidden">
-          <button id="btn-tab-view-flat" class="view-btn active">Flat List</button>
-          <button id="btn-tab-view-component" class="view-btn">By Component</button>
-        </div>
-        <div id="tab-stats" class="tab-stats hidden">
-          <div class="summary-card"><span class="summary-count" id="count-focusable">0</span><span class="summary-label">Focusable Elements</span></div>
-        </div>
-        <div id="tab-list" class="results-list"></div>
-      </div>
 
-      <!-- Aria Tree Inspector Panel -->
-      <div class="panel" id="panel-aria-tree">
-        <div class="panel-header">
-          <h2>Aria Tree Inspector</h2>
-          <p class="panel-desc">Inspect accessibility trees and ARIA properties</p>
+        <div class="section-sub-tabs pill-tab-bar" data-section="scan">
+          <button class="section-sub-tab pill-tab pill-tab-alt-all active" data-tab="full-page">Full Page</button>
+          <button class="section-sub-tab pill-tab" data-tab="pick-section">Pick Section</button>
         </div>
-        <div class="scan-actions">
-          <div class="scan-actions-row">
-            <button id="btn-pick-element" class="btn btn-section-pick" style="flex:1">🎯 Pick Element on Page</button>
-            <button id="btn-full-tree" class="btn btn-primary">Load Full Tree</button>
+
+        <!-- Full Page Scan -->
+        <div class="section-sub-panel active" data-panel="full-page">
+          <p class="sr-sub-desc">Run a full-page WCAG audit powered by axe-core. Filter by violations, passes, or needs-review.</p>
+          <div class="scan-actions">
+            <div class="scan-actions-row">
+              <select id="select-wcag-level" class="wcag-dropdown" aria-label="WCAG conformance level">
+                <option value="aa">WCAG 2.2 AA</option>
+                <option value="aaa">WCAG 2.2 AAA</option>
+                <option value="bp">Best Practices</option>
+              </select>
+              <button id="btn-scan-page" class="btn btn-primary">Scan Full Page</button>
+            </div>
+          </div>
+          <div class="search-bar" style="display: none;" id="auto-check-search-container">
+            <input type="text" id="auto-check-search" placeholder="Search results (e.g. contrast, button) ..." />
+          </div>
+          <div id="scan-scope-badge" class="scan-scope-badge hidden"></div>
+          <div id="results-summary" class="pill-tab-bar hidden">
+            <button class="pill-tab pill-tab-violations active" data-filter="violations"><span class="pill-count" id="count-violations">0</span> Violations</button>
+            <button class="pill-tab pill-tab-passes" data-filter="passes"><span class="pill-count" id="count-passes">0</span> Passes</button>
+            <button class="pill-tab pill-tab-incomplete" data-filter="incomplete"><span class="pill-count" id="count-incomplete">0</span> Needs Review</button>
+          </div>
+          <div id="view-toggle" class="view-toggle hidden">
+            <button id="btn-view-flat" class="view-btn active">By Rule</button>
+            <button id="btn-view-component" class="view-btn">By Component</button>
+          </div>
+          <div id="results-list" class="results-list" tabindex="0" role="region" aria-label="Scan results"></div>
+          <div id="loading" class="loading hidden"><div class="spinner"></div><span>Scanning page…</span></div>
+        </div>
+
+        <!-- Pick Section -->
+        <div class="section-sub-panel" data-panel="pick-section">
+          <p class="sr-sub-desc">Pick an element on the page, then run the scan on that section only.</p>
+          <div class="panel-actions">
+            <button id="btn-pick-section" class="btn btn-section-pick">Pick an Element from the Page</button>
           </div>
         </div>
-        <div class="panel-actions" style="justify-content: space-between; margin-top: 12px;">
-          <input type="text" id="aria-search" placeholder="Filter by role, name, or tag..." class="aria-input" style="flex: 1; margin-right: 12px; margin-bottom: 0;" />
-          <label class="toggle-label" style="white-space: nowrap;"><input type="checkbox" id="chk-show-ignored"> Show ignored</label>
-        </div>
-        <div id="aria-selected" class="scan-scope-badge hidden"></div>
-        <div id="aria-loading" class="loading hidden"><div class="spinner"></div><span>Building tree…</span></div>
-        <div id="aria-tree-container" class="aria-tree-container"></div>
       </div>
 
-      <!-- Color Contrast Panel -->
-      <div class="panel" id="panel-contrast">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- STRUCTURE PANEL                                                   -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-structure">
         <div class="panel-header">
-          <h2>Contrast Heatmap</h2>
-          <p class="panel-desc">Highlight text elements that fail WCAG color contrast ratios</p>
+          <h2>Structure</h2>
+          <p class="panel-desc">Inspect page landmarks, heading hierarchy, and ARIA roles</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-contrast-aa" class="btn btn-primary">Check AA (4.5:1)</button>
-          <button id="btn-contrast-aaa" class="btn btn-primary">Check AAA (7:1)</button>
-          <button id="btn-contrast-hide" class="btn btn-secondary hidden">Clear Overlay</button>
+
+        <div class="section-sub-tabs pill-tab-bar" data-section="structure">
+          <button class="section-sub-tab pill-tab pill-tab-alt-all active" data-tab="landmarks">Landmarks</button>
+          <button class="section-sub-tab pill-tab" data-tab="headings">Headings</button>
+          <button class="section-sub-tab pill-tab" data-tab="aria-tree">ARIA Tree</button>
         </div>
-        <div id="contrast-loading" class="loading hidden"><div class="spinner"></div><span>Scanning contrast…</span></div>
-        <div id="contrast-summary" class="results-summary hidden">
-          <div class="summary-card violations"><span class="summary-count" id="contrast-fail-count">0</span><span class="summary-label">Failures</span></div>
-          <div class="summary-card passes"><span class="summary-count" id="contrast-pass-count">0</span><span class="summary-label">Pass</span></div>
+
+        <!-- Landmarks -->
+        <div class="section-sub-panel active" data-panel="landmarks">
+          <p class="sr-sub-desc">Map ARIA landmarks on the page and detect missing main, nav, or banner regions.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-landmarks" class="btn btn-primary">Scan Landmarks</button>
+            <button id="btn-show-landmark-labels" class="btn btn-secondary">Show Labels on Page</button>
+          </div>
+          <div id="landmark-stats" class="results-summary hidden"></div>
+          <div id="landmark-loading" class="loading hidden"><div class="spinner"></div><span>Scanning landmarks…</span></div>
+          <div id="landmark-list" class="results-list" tabindex="0" role="region" aria-label="Landmark results"></div>
         </div>
-        <div id="contrast-list" class="results-list"></div>
+
+        <!-- Headings -->
+        <div class="section-sub-panel" data-panel="headings">
+          <p class="sr-sub-desc">Analyze heading hierarchy, find skipped levels, and flag missing h1.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-headings" class="btn btn-primary">Scan Headings</button>
+            <button id="btn-show-heading-labels" class="btn btn-secondary">Show Labels on Page</button>
+          </div>
+          <div id="heading-stats" class="results-summary hidden"></div>
+          <div id="heading-loading" class="loading hidden"><div class="spinner"></div><span>Scanning headings…</span></div>
+          <div id="heading-tree-container" class="results-list" tabindex="0" role="region" aria-label="Heading results"></div>
+        </div>
+
+        <!-- ARIA Tree -->
+        <div class="section-sub-panel" data-panel="aria-tree">
+          <p class="sr-sub-desc">Browse the full accessibility tree. Pick an element or load the entire page.</p>
+          <div class="scan-actions">
+            <div class="scan-actions-row">
+              <button id="btn-pick-element" class="btn btn-section-pick" style="flex:1">Pick Element on Page</button>
+              <button id="btn-full-tree" class="btn btn-primary">Load Full Tree</button>
+            </div>
+          </div>
+          <div class="panel-actions" style="justify-content: space-between; margin-top: 12px;">
+            <input type="text" id="aria-search" placeholder="Filter by role, name, or tag..." class="aria-input" style="flex: 1; margin-right: 12px; margin-bottom: 0;" />
+            <label class="toggle-label" style="white-space: nowrap;"><input type="checkbox" id="chk-show-ignored"> Show ignored</label>
+          </div>
+          <div id="aria-selected" class="scan-scope-badge hidden"></div>
+          <div id="aria-loading" class="loading hidden"><div class="spinner"></div><span>Building tree…</span></div>
+          <div id="aria-tree-container" class="aria-tree-container"></div>
+        </div>
       </div>
 
-      <!-- Text Spacing Panel -->
-      <div class="panel" id="panel-text-spacing">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- CONTENT PANEL                                                     -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-content">
         <div class="panel-header">
-          <h2>Text Spacing</h2>
-          <p class="panel-desc">Toggle WCAG 1.4.12 text spacing overrides to check content reflow</p>
+          <h2>Content</h2>
+          <p class="panel-desc">Audit form labels and image alt text</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-toggle-spacing" class="btn btn-primary">Toggle Text Spacing</button>
-          <button id="btn-spacing-screenshot" class="btn btn-secondary">📸 Screenshot</button>
+
+        <div class="section-sub-tabs pill-tab-bar" data-section="content">
+          <button class="section-sub-tab pill-tab pill-tab-alt-all active" data-tab="form-labels">Form Labels</button>
+          <button class="section-sub-tab pill-tab" data-tab="alt-review">Image Alt Text</button>
         </div>
-        <div id="spacing-status" class="spacing-status">
-          <span class="spacing-label">Status:</span> <span class="spacing-badge spacing-off">Off</span>
+
+        <!-- Form Labels -->
+        <div class="section-sub-panel active" data-panel="form-labels">
+          <p class="sr-sub-desc">Find unlabeled or poorly labeled form controls and orphan labels.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-forms" class="btn btn-primary">Scan Form Fields</button>
+            <button id="btn-highlight-orphans" class="btn btn-secondary hidden">Highlight Orphans</button>
+          </div>
+          <div id="form-labeller-stats" class="results-summary hidden"></div>
+          <div id="form-labeller-loading" class="loading hidden"><div class="spinner"></div><span>Scanning forms…</span></div>
+          <div id="form-labeller-list" class="results-list" tabindex="0" role="region" aria-label="Form label results"></div>
         </div>
-        <div class="spacing-info">
-          <p><strong>WCAG 1.4.12</strong> requires content to remain readable with:</p>
-          <ul>
-            <li>Line height ≥ 1.5× font size</li>
-            <li>Letter spacing ≥ 0.12× font size</li>
-            <li>Word spacing ≥ 0.16× font size</li>
-            <li>Paragraph spacing ≥ 2× font size</li>
-          </ul>
+
+        <!-- Alt Review -->
+        <div class="section-sub-panel" data-panel="alt-review">
+          <p class="sr-sub-desc">Check images for missing, suspicious, or excessively long alt text.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-images" class="btn btn-primary">Scan Images</button>
+          </div>
+          <div id="alt-review-stats" class="stat-strip hidden"></div>
+          <div id="alt-review-filter" class="pill-tab-bar hidden">
+            <button class="pill-tab pill-tab-alt-all alt-filter-btn active" data-filter="all">All</button>
+            <button class="pill-tab pill-tab-alt-informative alt-filter-btn" data-filter="informative">Informative</button>
+            <button class="pill-tab pill-tab-alt-decorative alt-filter-btn" data-filter="decorative">Decorative</button>
+            <button class="pill-tab pill-tab-alt-needs-review alt-filter-btn" data-filter="needs-review">Needs Review</button>
+            <button class="pill-tab pill-tab-alt-issues alt-filter-btn" data-filter="issues">Issues</button>
+          </div>
+          <div id="alt-review-loading" class="loading hidden"><div class="spinner"></div><span>Scanning images…</span></div>
+          <div id="alt-review-gallery" class="alt-gallery"></div>
         </div>
       </div>
 
-      <!-- Headings Panel -->
-      <div class="panel" id="panel-headings">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- KEYBOARD PANEL                                                    -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-keyboard">
         <div class="panel-header">
-          <h2>Heading Outline</h2>
-          <p class="panel-desc">Scan heading structure and validate order</p>
+          <h2>Keyboard &amp; Focus</h2>
+          <p class="panel-desc">Tab stops, focus order, keyboard issues, and shortcut audits</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-scan-headings" class="btn btn-primary">Scan Headings</button>
-          <button id="btn-show-heading-labels" class="btn btn-secondary">Show Labels on Page</button>
+
+        <div class="section-sub-tabs pill-tab-bar" data-section="keyboard">
+          <button class="section-sub-tab pill-tab pill-tab-alt-all active" data-tab="tab-stops">Tab Stops</button>
+          <button class="section-sub-tab pill-tab" data-tab="kb-issues">Keyboard Issues</button>
+          <button class="section-sub-tab pill-tab" data-tab="kb-shortcuts">Keyboard Shortcuts</button>
+          <button class="section-sub-tab pill-tab" data-tab="manual-kb">Manual Test</button>
+          <button class="section-sub-tab pill-tab" data-tab="component-flow">Component Flow</button>
         </div>
-        <div id="heading-stats" class="results-summary hidden"></div>
-        <div id="heading-loading" class="loading hidden"><div class="spinner"></div><span>Scanning headings…</span></div>
-        <div id="heading-tree-container" class="results-list"></div>
+
+        <!-- Tab Stops -->
+        <div class="section-sub-panel active" data-panel="tab-stops">
+          <p class="sr-sub-desc">Visualize tab order and focus flow across the page.</p>
+          <div class="panel-actions">
+            <button id="btn-show-tabs" class="btn btn-primary">Show Tab Stops</button>
+            <button id="btn-show-flow" class="btn btn-primary">Show Tab Flow</button>
+            <button id="btn-hide-tabs" class="btn btn-secondary hidden">Hide</button>
+          </div>
+          <div id="tab-view-toggle" class="view-toggle hidden">
+            <button id="btn-tab-view-flat" class="view-btn active">Flat List</button>
+            <button id="btn-tab-view-component" class="view-btn">By Component</button>
+          </div>
+          <div id="tab-stats" class="tab-stats hidden">
+            <div class="summary-card"><span class="summary-count" id="count-focusable">0</span><span class="summary-label">Focusable Elements</span></div>
+          </div>
+          <div id="tab-list" class="results-list" tabindex="0" role="region" aria-label="Tab stop results"></div>
+        </div>
+
+        <!-- Keyboard Issues -->
+        <div class="section-sub-panel" data-panel="kb-issues">
+          <p class="sr-sub-desc">Detect unfocusable elements, phantom focus, missing focus indicators, and tab/visual order mismatches.</p>
+          <div class="panel-actions">
+            <button id="btn-run-kb-audit" class="btn btn-primary">Scan Keyboard Issues</button>
+          </div>
+          <div id="kb-audit-stats" class="stat-strip hidden"></div>
+          <div id="kb-severity-bar" class="kb-severity-bar hidden"></div>
+          <div id="kb-view-toggle" class="kb-view-toggle hidden"></div>
+          <div id="kb-audit-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="kb-audit-results" class="results-list" tabindex="0" role="region" aria-label="Keyboard audit results"></div>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="section-sub-panel" data-panel="kb-shortcuts">
+          <p class="sr-sub-desc">Audit accesskey conflicts, single-key shortcuts (WCAG 2.1.4), and skip-link presence.</p>
+          <div class="panel-actions">
+            <button id="btn-run-ks-audit" class="btn btn-primary">Scan Shortcuts</button>
+          </div>
+          <div id="ks-audit-stats" class="stat-strip hidden"></div>
+          <div id="ks-audit-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="ks-audit-results" class="results-list" tabindex="0" role="region" aria-label="Keyboard shortcuts audit results"></div>
+        </div>
+
+        <!-- Manual Keyboard Test -->
+        <div class="section-sub-panel" data-panel="manual-kb">
+          <p class="sr-sub-desc">Tab through the page and record your focus trail. See exactly where focus lands.</p>
+          <div class="panel-actions">
+            <button id="btn-mkt-start" class="btn btn-primary">Start Recording</button>
+            <button id="btn-mkt-stop" class="btn btn-secondary hidden">Stop Recording</button>
+            <button id="btn-mkt-clear" class="btn btn-secondary hidden">Clear Trail</button>
+          </div>
+          <div id="mkt-stats" class="stat-strip hidden"></div>
+          <div id="mkt-results" class="results-list" tabindex="0" role="region" aria-label="Manual keyboard test results"></div>
+        </div>
+
+        <!-- Component Keyboard Flow -->
+        <div class="section-sub-panel" data-panel="component-flow">
+          <p class="sr-sub-desc">Inspect tab flow within individual components. Pick a component to see only its focusable elements.</p>
+          <div class="panel-actions">
+            <button id="btn-pick-tab-component" class="btn btn-section-pick">Pick Component on Page</button>
+          </div>
+          <div id="component-flow-stats" class="tab-stats hidden">
+            <div class="summary-card"><span class="summary-count" id="count-component-focusable">0</span><span class="summary-label">Focusable Elements</span></div>
+          </div>
+          <div id="component-flow-list" class="results-list" tabindex="0" role="region" aria-label="Component keyboard flow results"></div>
+        </div>
       </div>
 
-      <!-- Landmarks Panel -->
-      <div class="panel" id="panel-landmarks">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- VISUAL PANEL                                                      -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-visual">
         <div class="panel-header">
-          <h2>Landmark Navigator</h2>
-          <p class="panel-desc">List page landmarks with duplicate detection</p>
+          <h2>Visual Checks</h2>
+          <p class="panel-desc">Color contrast, touch target sizes, and text spacing</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-scan-landmarks" class="btn btn-primary">Scan Landmarks</button>
-          <button id="btn-show-landmark-labels" class="btn btn-secondary">Show Labels on Page</button>
+
+        <div class="section-sub-tabs pill-tab-bar" data-section="visual">
+          <button class="section-sub-tab pill-tab pill-tab-alt-all active" data-tab="contrast">Contrast</button>
+          <button class="section-sub-tab pill-tab" data-tab="touch-targets">Touch Targets</button>
+          <button class="section-sub-tab pill-tab" data-tab="text-spacing">Text Spacing</button>
+          <button class="section-sub-tab pill-tab" data-tab="color-vision">Color Vision</button>
+          <button class="section-sub-tab pill-tab" data-tab="motion-audit">Motion</button>
         </div>
-        <div id="landmark-stats" class="results-summary hidden"></div>
-        <div id="landmark-loading" class="loading hidden"><div class="spinner"></div><span>Scanning landmarks…</span></div>
-        <div id="landmark-list" class="results-list"></div>
+
+        <!-- Contrast -->
+        <div class="section-sub-panel active" data-panel="contrast">
+          <p class="sr-sub-desc">Check text contrast ratios against WCAG AA (4.5:1) and AAA (7:1) thresholds.</p>
+          <div class="panel-actions">
+            <button id="btn-contrast-aa" class="btn btn-primary">Check AA (4.5:1)</button>
+            <button id="btn-contrast-aaa" class="btn btn-primary">Check AAA (7:1)</button>
+            <button id="btn-contrast-hide" class="btn btn-secondary hidden">Clear Overlay</button>
+          </div>
+          <div id="contrast-loading" class="loading hidden"><div class="spinner"></div><span>Scanning contrast…</span></div>
+          <div id="contrast-summary" class="results-summary hidden">
+            <div class="summary-card violations"><span class="summary-count" id="contrast-fail-count">0</span><span class="summary-label">Failures</span></div>
+            <div class="summary-card passes"><span class="summary-count" id="contrast-pass-count">0</span><span class="summary-label">Pass</span></div>
+          </div>
+          <div id="contrast-list" class="results-list" tabindex="0" role="region" aria-label="Contrast results"></div>
+        </div>
+
+        <!-- Touch Targets -->
+        <div class="section-sub-panel" data-panel="touch-targets">
+          <p class="sr-sub-desc">Measure interactive elements against WCAG 2.5.5/2.5.8 minimum target sizes.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-touch" class="btn btn-primary">Scan Touch Targets</button>
+            <button id="btn-toggle-touch-overlay" class="btn btn-secondary">Show Overlay</button>
+          </div>
+          <div id="touch-target-stats" class="stat-strip hidden"></div>
+          <div id="touch-target-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="touch-target-results" class="results-list" tabindex="0" role="region" aria-label="Touch target results"></div>
+        </div>
+
+        <!-- Text Spacing -->
+        <div class="section-sub-panel" data-panel="text-spacing">
+          <p class="sr-sub-desc">Apply WCAG 1.4.12 text spacing overrides and verify content remains readable.</p>
+          <div class="panel-actions">
+            <button id="btn-toggle-spacing" class="btn btn-primary">Toggle Text Spacing</button>
+            <button id="btn-spacing-screenshot" class="btn btn-secondary">Screenshot</button>
+          </div>
+          <div id="spacing-status" class="spacing-status">
+            <span class="spacing-label">Status:</span> <span class="spacing-badge spacing-off">Off</span>
+          </div>
+          <div class="spacing-info">
+            <p><strong>WCAG 1.4.12</strong> requires content to remain readable with:</p>
+            <ul>
+              <li>Line height ≥ 1.5× font size</li>
+              <li>Letter spacing ≥ 0.12× font size</li>
+              <li>Word spacing ≥ 0.16× font size</li>
+              <li>Paragraph spacing ≥ 2× font size</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Color Vision -->
+        <div class="section-sub-panel" data-panel="color-vision">
+          <p class="sr-sub-desc">Simulate how the page appears to users with color vision deficiencies using Chrome DevTools Protocol.</p>
+          <div id="cv-status" class="mv-status"></div>
+          <div class="cv-grid">
+            <button class="cv-toggle-btn" data-deficiency="deuteranopia">
+              <strong>Deuteranopia</strong>
+              <span class="cv-desc">Green-blind · ~6% of males</span>
+            </button>
+            <button class="cv-toggle-btn" data-deficiency="protanopia">
+              <strong>Protanopia</strong>
+              <span class="cv-desc">Red-blind · ~2% of males</span>
+            </button>
+            <button class="cv-toggle-btn" data-deficiency="tritanopia">
+              <strong>Tritanopia</strong>
+              <span class="cv-desc">Blue-blind · ~0.01%</span>
+            </button>
+            <button class="cv-toggle-btn" data-deficiency="achromatopsia">
+              <strong>Achromatopsia</strong>
+              <span class="cv-desc">Total color blindness · ~0.003%</span>
+            </button>
+            <button class="cv-toggle-btn" data-deficiency="blurredVision">
+              <strong>Blurred Vision</strong>
+              <span class="cv-desc">Low visual acuity</span>
+            </button>
+          </div>
+          <div class="panel-actions" style="margin-top:12px">
+            <button id="btn-cv-reset" class="btn btn-secondary hidden">Reset to Normal Vision</button>
+          </div>
+        </div>
+
+        <!-- Motion Audit -->
+        <div class="section-sub-panel" data-panel="motion-audit">
+          <p class="sr-sub-desc">Detect CSS animations, autoplay media, animated GIFs, and check prefers-reduced-motion support (WCAG 2.3.3).</p>
+          <div class="panel-actions">
+            <button id="btn-run-motion-audit" class="btn btn-primary">Scan Motion &amp; Animation</button>
+          </div>
+          <div id="motion-audit-stats" class="stat-strip hidden"></div>
+          <div id="motion-audit-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="motion-audit-results" class="results-list" tabindex="0" role="region" aria-label="Motion audit results"></div>
+        </div>
       </div>
 
-      <!-- Form Labeller Panel -->
-      <div class="panel" id="panel-form-labeller">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SCREEN READER PANEL                                               -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-screen-reader">
         <div class="panel-header">
-          <h2>Form Labels</h2>
-          <p class="panel-desc">Check form fields for proper labelling and highlight orphans</p>
+          <h2>Screen Reader Simulation</h2>
+          <p class="panel-desc">Preview announcements, scan reading flow, audit names, detect focus traps, and more</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-scan-forms" class="btn btn-primary">Scan Form Fields</button>
-          <button id="btn-highlight-orphans" class="btn btn-secondary hidden">Highlight Orphans</button>
+
+        <div class="sr-sub-tabs pill-tab-bar">
+          <button class="sr-sub-tab pill-tab pill-tab-alt-all active" data-sr-tab="voice">Voice Preview</button>
+          <button class="sr-sub-tab pill-tab" data-sr-tab="sr-flow">Reading Flow</button>
+          <button class="sr-sub-tab pill-tab" data-sr-tab="shortcuts">Element List</button>
+          <button class="sr-sub-tab pill-tab" data-sr-tab="name-audit">Name Audit</button>
+          <button class="sr-sub-tab pill-tab" data-sr-tab="traps">Focus Traps</button>
+          <button class="sr-sub-tab pill-tab" data-sr-tab="hidden">Hidden Content</button>
+          <button class="sr-sub-tab pill-tab" data-sr-tab="tables">Table Audit</button>
+          <button class="sr-sub-tab pill-tab" data-sr-tab="aria-validation">ARIA Validation</button>
         </div>
-        <div id="form-labeller-stats" class="results-summary hidden"></div>
-        <div id="form-labeller-loading" class="loading hidden"><div class="spinner"></div><span>Scanning forms…</span></div>
-        <div id="form-labeller-list" class="results-list"></div>
+
+        <!-- Voice Preview -->
+        <div class="sr-sub-panel active" id="sr-panel-voice">
+          <p class="sr-sub-desc">Hover over any element to see what a screen reader would announce — role, name, state, and description.</p>
+          <div class="panel-actions">
+            <button id="btn-start-voice" class="btn btn-primary">Start Voice Preview</button>
+            <button id="btn-stop-voice" class="btn btn-secondary hidden">Stop Voice Preview</button>
+          </div>
+        </div>
+
+        <!-- Reading Flow -->
+        <div class="sr-sub-panel" id="sr-panel-sr-flow">
+          <p class="sr-sub-desc">Generate a linear transcript of the screen reader reading order, or show numbered badges on the page.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-sr-flow" class="btn btn-primary">Generate Flow</button>
+            <button id="btn-show-reading-order" class="btn btn-primary">Show Reading Order</button>
+            <button id="btn-hide-reading-order" class="btn btn-secondary hidden">Hide Reading Order</button>
+          </div>
+          <div id="sr-flow-stats" class="stat-strip hidden"></div>
+          <div id="sr-flow-loading" class="loading hidden"><div class="spinner"></div><span>Generating…</span></div>
+          <div id="sr-flow-results" class="results-list" tabindex="0" role="region" aria-label="Screen reader flow results"></div>
+        </div>
+
+        <!-- Element List -->
+        <div class="sr-sub-panel" id="sr-panel-shortcuts">
+          <p class="sr-sub-desc">Scan all links, buttons, headings, and form fields. Detect duplicates and ambiguous names.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-shortcuts" class="btn btn-primary">Scan Page</button>
+          </div>
+          <div id="sr-shortcut-stats" class="stat-strip hidden"></div>
+          <div id="sr-shortcut-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="sr-shortcut-results" class="results-list" tabindex="0" role="region" aria-label="Shortcut results"></div>
+        </div>
+
+        <!-- Name Audit -->
+        <div class="sr-sub-panel" id="sr-panel-name-audit">
+          <p class="sr-sub-desc">Find tricky accessible name patterns (overrides, labelledby, hidden, fallback) and compare with CDP-computed names.</p>
+          <div class="panel-actions">
+            <button id="btn-run-name-audit" class="btn btn-primary">Run Name Audit</button>
+          </div>
+          <div id="sr-name-stats" class="results-summary hidden"></div>
+          <div id="sr-name-loading" class="loading hidden"><div class="spinner"></div><span>Auditing names…</span></div>
+          <div id="sr-name-results" class="results-list" tabindex="0" role="region" aria-label="Name audit results"></div>
+        </div>
+
+        <!-- Focus Traps -->
+        <div class="sr-sub-panel" id="sr-panel-traps">
+          <p class="sr-sub-desc">Detect modals and dialogs. Validate focus trapping, initial focus, and return focus. Click items to highlight on page.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-traps" class="btn btn-primary">Scan Focus Traps</button>
+          </div>
+          <div id="sr-trap-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="sr-trap-results" class="results-list" tabindex="0" role="region" aria-label="Focus trap results"></div>
+        </div>
+
+        <!-- Hidden Content Audit -->
+        <div class="sr-sub-panel" id="sr-panel-hidden">
+          <p class="sr-sub-desc">Audit aria-hidden mismatches, focusable elements inside hidden regions, SR-only text, and missing alt. Click items to highlight on page.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-hidden" class="btn btn-primary">Scan Hidden Content</button>
+          </div>
+          <div id="sr-hidden-stats" class="stat-strip hidden"></div>
+          <div id="sr-hidden-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="sr-hidden-results" class="results-list" tabindex="0" role="region" aria-label="Hidden content results"></div>
+        </div>
+
+        <!-- Table Audit -->
+        <div class="sr-sub-panel" id="sr-panel-tables">
+          <p class="sr-sub-desc">Scan tables for headers, scope, caption, and aria-label. Flag missing structure for screen readers.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-tables" class="btn btn-primary">Scan Tables</button>
+          </div>
+          <div id="sr-table-stats" class="stat-strip hidden"></div>
+          <div id="sr-table-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="sr-table-results" class="results-list" tabindex="0" role="region" aria-label="Table audit results"></div>
+        </div>
+
+        <!-- ARIA Validation -->
+        <div class="sr-sub-panel" id="sr-panel-aria-validation">
+          <p class="sr-sub-desc">Detect broken aria references, invalid roles, and forbidden ARIA patterns.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-aria-validation" class="btn btn-primary">Scan ARIA Issues</button>
+          </div>
+          <div id="sr-aria-val-stats" class="stat-strip hidden"></div>
+          <div id="sr-aria-val-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="sr-aria-val-results" class="results-list" tabindex="0" role="region" aria-label="ARIA validation results"></div>
+        </div>
       </div>
 
-      <!-- Name Calc Test Panel -->
-      <div class="panel" id="panel-name-calc">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- MONITORING PANEL                                                  -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-monitoring">
         <div class="panel-header">
-          <h2>Name Calculation Test</h2>
-          <p class="panel-desc">Find tricky accessible name patterns and compare with CDP-computed names</p>
+          <h2>Live Region Monitor</h2>
+          <p class="panel-desc">Detect aria-live regions and role="alert" elements</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-run-name-tests" class="btn btn-primary">Run Name Tests</button>
+        <div class="section-sub-panel active" data-panel="live-regions">
+          <p class="sr-sub-desc">Scan for live regions on the page, then start monitoring to log content changes in real-time.</p>
+          <div class="panel-actions">
+            <button id="btn-scan-live-regions" class="btn btn-primary">Scan Live Regions</button>
+            <button id="btn-start-monitoring" class="btn btn-primary hidden">Start Monitoring</button>
+            <button id="btn-stop-monitoring" class="btn btn-secondary hidden">Stop Monitoring</button>
+            <button id="btn-clear-monitor-log" class="btn btn-secondary hidden">Clear Log</button>
+          </div>
+          <div id="live-region-stats" class="stat-strip hidden"></div>
+          <div id="live-region-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="live-region-list" class="results-list" tabindex="0" role="region" aria-label="Live region scan results"></div>
+          <div id="monitor-log" class="results-list" tabindex="0" role="log" aria-label="Live region change log" aria-live="polite"></div>
         </div>
-        <div id="name-calc-stats" class="results-summary hidden"></div>
-        <div id="name-calc-loading" class="loading hidden"><div class="spinner"></div><span>Running tests…</span></div>
-        <div id="name-calc-list" class="results-list"></div>
       </div>
 
-      <!-- Alt-Text Review Panel -->
-      <div class="panel" id="panel-alt-review">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- MOBILE VIEWPORT PANEL                                             -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-mobile">
         <div class="panel-header">
-          <h2>Alt-Text Reviewer</h2>
-          <p class="panel-desc">Review all images — classify as Decorative or Informative and validate alt text</p>
+          <h2>Mobile Viewport</h2>
+          <p class="panel-desc">Emulate mobile devices and audit responsive accessibility</p>
         </div>
-        <div class="panel-actions">
-          <button id="btn-scan-images" class="btn btn-primary">Scan Images</button>
+
+        <div class="section-sub-tabs pill-tab-bar" data-section="mobile">
+          <button class="section-sub-tab pill-tab pill-tab-alt-all active" data-tab="mv-emulate">Emulate</button>
+          <button class="section-sub-tab pill-tab" data-tab="mv-audit">Mobile Audit</button>
         </div>
-        <div id="alt-review-stats" class="stat-strip hidden"></div>
-        <div id="alt-review-filter" class="pill-tab-bar hidden">
-          <button class="pill-tab pill-tab-alt-all alt-filter-btn active" data-filter="all">All</button>
-          <button class="pill-tab pill-tab-alt-informative alt-filter-btn" data-filter="informative">Informative</button>
-          <button class="pill-tab pill-tab-alt-decorative alt-filter-btn" data-filter="decorative">Decorative</button>
-          <button class="pill-tab pill-tab-alt-needs-review alt-filter-btn" data-filter="needs-review">Needs Review</button>
-          <button class="pill-tab pill-tab-alt-issues alt-filter-btn" data-filter="issues">Issues</button>
+
+        <!-- Emulate -->
+        <div class="section-sub-panel active" data-panel="mv-emulate">
+          <p class="sr-sub-desc">Pick a device to resize the page viewport using Chrome DevTools Protocol emulation.</p>
+          <div id="mobile-status" class="mv-status"></div>
+          <div class="mv-device-grid">
+            <button class="mv-device-btn" data-device="iphone-se">
+              <strong>iPhone SE</strong><span class="mv-dims">375×667</span>
+            </button>
+            <button class="mv-device-btn" data-device="iphone-14">
+              <strong>iPhone 14</strong><span class="mv-dims">390×844</span>
+            </button>
+            <button class="mv-device-btn" data-device="pixel-7">
+              <strong>Pixel 7</strong><span class="mv-dims">412×915</span>
+            </button>
+            <button class="mv-device-btn" data-device="ipad">
+              <strong>iPad</strong><span class="mv-dims">810×1080</span>
+            </button>
+            <button class="mv-device-btn" data-device="ipad-pro">
+              <strong>iPad Pro 12.9</strong><span class="mv-dims">1024×1366</span>
+            </button>
+          </div>
+          <div class="mv-custom-row">
+            <input type="number" id="mv-custom-w" placeholder="Width" min="200" max="3000" class="mv-input">
+            <span>×</span>
+            <input type="number" id="mv-custom-h" placeholder="Height" min="200" max="3000" class="mv-input">
+            <button id="btn-mv-custom-apply" class="btn btn-primary btn-sm">Apply</button>
+          </div>
+          <div class="panel-actions">
+            <button id="btn-mv-orientation" class="btn btn-secondary">↕ Portrait</button>
+            <button id="btn-mobile-reset" class="btn btn-secondary hidden">Reset Viewport</button>
+          </div>
         </div>
-        <div id="alt-review-loading" class="loading hidden"><div class="spinner"></div><span>Scanning images…</span></div>
-        <div id="alt-review-gallery" class="alt-gallery"></div>
+
+        <!-- Mobile Audit -->
+        <div class="section-sub-panel" data-panel="mv-audit">
+          <p class="sr-sub-desc">Re-run accessibility audits at the emulated viewport. Compare touch targets and overflow with desktop baseline.</p>
+          <div class="panel-actions">
+            <button id="btn-mobile-audit" class="btn btn-primary">Scan at Current Viewport</button>
+          </div>
+          <div id="mobile-audit-stats" class="stat-strip hidden"></div>
+          <div id="mobile-audit-loading" class="loading hidden"><div class="spinner"></div><span>Scanning…</span></div>
+          <div id="mobile-audit-results" class="results-list" tabindex="0" role="region" aria-label="Mobile audit results"></div>
+        </div>
       </div>
-    </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- ISSUE HISTORY PANEL                                               -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-history">
+        <div class="panel-header">
+          <h2>Scan History</h2>
+          <p class="panel-desc">Track score trends and compare scans over time</p>
+        </div>
+
+        <div class="section-sub-tabs pill-tab-bar" data-section="history">
+          <button class="section-sub-tab pill-tab pill-tab-alt-all active" data-tab="hist-timeline">Timeline</button>
+          <button class="section-sub-tab pill-tab" data-tab="hist-compare">Compare</button>
+        </div>
+
+        <!-- Timeline -->
+        <div class="section-sub-panel active" data-panel="hist-timeline">
+          <p class="sr-sub-desc">View all past scorecard runs. Runs are saved automatically each time you run the Scorecard.</p>
+          <div id="history-stats" class="stat-strip hidden"></div>
+          <div id="history-timeline" class="results-list" tabindex="0" role="region" aria-label="Scan history timeline"></div>
+          <div class="panel-actions" style="margin-top:12px">
+            <button id="btn-export-history" class="btn btn-secondary">Export JSON</button>
+            <button id="btn-clear-history" class="btn btn-secondary">Clear History</button>
+          </div>
+        </div>
+
+        <!-- Compare -->
+        <div class="section-sub-panel" data-panel="hist-compare">
+          <p class="sr-sub-desc">Compare the two most recent scans for the same URL. Select a page from the dropdown to see score deltas.</p>
+          <div id="history-compare-results" class="results-list" tabindex="0" role="region" aria-label="Scan comparison results"></div>
+        </div>
+      </div>
+
+    </main>
   </div>
 
   <script type="module" src="panel.js"></script>

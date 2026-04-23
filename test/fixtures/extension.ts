@@ -34,6 +34,7 @@ export const test = base.extend<ExtensionFixtures, WorkerFixtures>({
     const context = await chromium.launchPersistentContext(sharedUserDataDir, {
       headless: false,
       args: [
+        '--headless=new',
         `--disable-extensions-except=${EXTENSION_PATH}`,
         `--load-extension=${EXTENSION_PATH}`,
         '--no-first-run',

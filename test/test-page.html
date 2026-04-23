@@ -122,6 +122,13 @@
       <tr><td class="issue-id">28</td><td>Aria Tree</td><td>Live region assertive</td><td><code>div#live-region</code></td></tr>
       <tr><td class="issue-id">29</td><td>Aria Tree</td><td>aria-expanded without toggle</td><td><code>div#fake-disclosure</code></td></tr>
       <tr><td class="issue-id">30</td><td>Alt Review</td><td>Correct decorative image (alt="")</td><td><code>img#decorative-img</code></td></tr>
+      <tr><td class="issue-id">31</td><td>ARIA Validation</td><td>Broken aria-labelledby reference</td><td><code>button#broken-ref-btn</code></td></tr>
+      <tr><td class="issue-id">32</td><td>ARIA Validation</td><td>Invalid ARIA role</td><td><code>div#invalid-role-div[role="banana"]</code></td></tr>
+      <tr><td class="issue-id">33</td><td>ARIA Validation</td><td>Slider missing required attrs</td><td><code>div#incomplete-slider[role="slider"]</code></td></tr>
+      <tr><td class="issue-id">34</td><td>ARIA Validation</td><td>Empty aria-label</td><td><code>button#empty-aria-label-btn</code></td></tr>
+      <tr><td class="issue-id">35</td><td>Table Audit</td><td>Table without headers</td><td><code>table#bad-table</code></td></tr>
+      <tr><td class="issue-id">36</td><td>Keyboard Shortcuts</td><td>Duplicate accesskey</td><td><code>a[accesskey="p"]</code></td></tr>
+      <tr><td class="issue-id">37</td><td>Live Region</td><td>role="status" live region</td><td><code>div#status-region</code></td></tr>
     </tbody>
   </table>
 </div>
@@ -358,6 +365,43 @@
       <input type="text" title="Search products" placeholder="Search..." style="margin-top: 8px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
     </div>
 
+    <!-- ─── ARIA Validation Fixtures ──────────────────────────────────── -->
+    <div class="section-card">
+      <h2>ARIA Test Zone</h2>
+      <!-- Issue #31: Broken aria-labelledby reference -->
+      <button id="broken-ref-btn" aria-labelledby="nonexistent-id-xyz" data-expected-issue="Broken aria-labelledby ref" class="btn" style="margin: 4px;">Broken Ref Button</button>
+      <!-- Issue #32: Invalid ARIA role -->
+      <div id="invalid-role-div" role="banana" data-expected-issue="Invalid role" style="padding: 8px; background: #fce4ec; border-radius: 4px; margin: 8px 0;">Invalid role="banana"</div>
+      <!-- Issue #33: Slider missing required attrs -->
+      <div id="incomplete-slider" role="slider" tabindex="0" data-expected-issue="Missing aria-valuemin/max/now" style="padding: 8px; background: #e3f2fd; border-radius: 4px; margin: 8px 0;">Incomplete Slider</div>
+      <!-- Issue #34: Empty aria-label -->
+      <button id="empty-aria-label-btn" aria-label="" data-expected-issue="Empty aria-label" class="btn" style="margin: 4px;">Empty Label Btn</button>
+    </div>
+
+    <!-- ─── Table Audit Fixture ───────────────────────────────────────── -->
+    <div class="section-card">
+      <h2>Data Comparison</h2>
+      <!-- Issue #35: Table without proper headers -->
+      <table id="bad-table" style="width: 100%; border-collapse: collapse;" data-expected-issue="Table missing headers">
+        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px;">Headphones</td><td style="padding: 8px;">$299</td><td style="padding: 8px;">★★★★★</td></tr>
+        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px;">Earbuds</td><td style="padding: 8px;">$79</td><td style="padding: 8px;">★★★★☆</td></tr>
+      </table>
+      <!-- CORRECT: Table with proper headers -->
+      <table id="good-table" style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+        <caption>Product Comparison</caption>
+        <thead><tr><th scope="col" style="padding: 8px; text-align: left;">Product</th><th scope="col" style="padding: 8px;">Price</th><th scope="col" style="padding: 8px;">Rating</th></tr></thead>
+        <tbody><tr><td style="padding: 8px;">Headphones</td><td style="padding: 8px;">$299</td><td style="padding: 8px;">★★★★★</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ─── Keyboard Shortcuts Fixtures ───────────────────────────────── -->
+    <div class="section-card">
+      <h2>Quick Links</h2>
+      <!-- Issue #36: Duplicate accesskey -->
+      <a href="#products" accesskey="p" data-expected-issue="Duplicate accesskey p" style="margin-right: 12px;">Products (accesskey p)</a>
+      <a href="#deals" accesskey="p" data-expected-issue="Duplicate accesskey p">Deals (also accesskey p)</a>
+    </div>
+
   </main>
 
   <!-- ═════════════════════════════════════════════════════════════════════
@@ -376,6 +420,12 @@
       <h3>Need Help?</h3>
       <p>Contact our support team 24/7.</p>
       <button class="btn btn-primary" style="width: 100%; margin-top: 8px;">Live Chat</button>
+    </div>
+    <!-- Issue #37: role="status" live region -->
+    <div class="sidebar-widget">
+      <div id="status-region" role="status" style="padding: 8px; background: #e8f5e9; border-radius: 4px; font-size: 13px;">
+        Order status: Processing
+      </div>
     </div>
   </aside>
 </div>

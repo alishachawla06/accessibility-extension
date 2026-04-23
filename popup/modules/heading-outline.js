@@ -1,5 +1,5 @@
 // ─── Heading Outline Module ──────────────────────────────────────────────────
-import { escapeHtml, getActiveTab, showElement, hideElement, renderError } from './utils.js';
+import { escapeHtml, getActiveTab, showElement, hideElement, renderError, highlightElement } from './utils.js';
 
 let labelsVisible = false;
 
@@ -57,10 +57,10 @@ async function scanHeadings() {
     }
 
     // Stats bar
+    const issueCount = skippedLevels + emptyCount;
     stats.innerHTML = `
-      <span class="ax-stat"><strong>${result.length}</strong> headings</span>
-      ${skippedLevels > 0 ? `<span class="ax-stat ax-stat-issue">⚠️ <strong>${skippedLevels}</strong> skipped levels</span>` : '<span class="ax-stat ax-stat-landmark">✅ correct order</span>'}
-      ${emptyCount > 0 ? `<span class="ax-stat ax-stat-issue">⚠️ <strong>${emptyCount}</strong> empty</span>` : ''}
+      <span class="heading-stat"><strong>${result.length}</strong> headings</span>
+      <span class="heading-stat ${issueCount === 0 ? 'heading-stat-pass' : 'heading-stat-issue'}">${issueCount === 0 ? '✅' : '⚠️'} <strong>${issueCount}</strong> issues</span>
     `;
     showElement(stats);
 
@@ -69,23 +69,32 @@ async function scanHeadings() {
     const issueMessages = {};
     issues.forEach(i => { issueMessages[i.index] = i.msg; });
 
-    let html = '';
+    let html = '<div class="heading-tree-label">Heading Tree</div>';
     result.forEach((h, idx) => {
-      const indent = (h.level - 1) * 20;
-      const warnClass = h.isEmpty ? 'ax-row-warn' : issueMap.has(idx) ? 'ax-row-warn-alt' : '';
-      const badge = `<span class="ax-badge ax-badge-heading ax-badge-h${h.level}">H${h.level}</span>`;
+      const indent = (h.level - 1) * 24;
+      const warnClass = h.isEmpty ? 'heading-card-warn' : issueMap.has(idx) ? 'heading-card-warn' : '';
+      const badge = `<span class="heading-badge heading-badge-h${h.level}">H${h.level}</span>`;
       const nameHtml = h.isEmpty
-        ? '<span class="ax-missing-name">⚠️ empty heading</span>'
-        : `<span class="ax-name-primary">${escapeHtml(h.text.substring(0, 80))}</span>`;
+        ? '<span class="heading-card-empty">⚠️ empty heading</span>'
+        : `<span class="heading-card-text">${escapeHtml(h.text.substring(0, 80))}</span>`;
       const warnMsg = issueMap.has(idx)
-        ? `<span class="ax-badge ax-badge-warn">⚠️ ${escapeHtml(issueMessages[idx])}</span>`
+        ? `<div class="heading-card-issue">⚠️ ${escapeHtml(issueMessages[idx])}</div>`
         : '';
 
-      html += `<div class="ax-node-row ${warnClass}" style="padding-left:${indent + 6}px" data-heading-idx="${idx}">
-        ${badge} ${nameHtml} ${warnMsg}
+      html += `<div class="heading-card heading-card-h${h.level} ${warnClass}" style="margin-left:${indent}px; cursor:pointer" data-heading-idx="${idx}" data-selector="${escapeHtml(h.selector)}">
+        ${badge} ${nameHtml}
+        ${warnMsg}
       </div>`;
     });
     container.innerHTML = html;
+
+    // Click to highlight heading on page
+    const activeTab = await getActiveTab();
+    container.querySelectorAll('.heading-card[data-selector]').forEach(card => {
+      card.addEventListener('click', () => {
+        highlightElement(activeTab.id, card.dataset.selector);
+      });
+    });
 
   } catch (e) {
     hideElement(loading);

@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/extension';
 import { scanPanel, getInnerHtml, isVisible, countContentOverlays } from '../utils/helpers';
 
-const SCAN = { panel: 'landmarks', btn: 'btn-scan-landmarks', result: '#landmark-list .landmark-item' } as const;
+const SCAN = { panel: 'structure', btn: 'btn-scan-landmarks', result: '#landmark-list .landmark-item' } as const;
 
 test.describe('Landmarks Panel', () => {
   test('should detect landmarks and flag duplicates', async ({ panelPage, clickNav }) => {

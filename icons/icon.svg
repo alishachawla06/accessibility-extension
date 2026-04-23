@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1565c0"/>
+      <stop offset="100%" stop-color="#0d47a1"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+  <!-- Magnifying glass -->
+  <circle cx="56" cy="52" r="24" fill="none" stroke="#fff" stroke-width="5"/>
+  <line x1="73" y1="69" x2="96" y2="92" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <!-- Eye inside lens -->
+  <ellipse cx="56" cy="52" rx="12" ry="8" fill="none" stroke="#fff" stroke-width="2.5"/>
+  <circle cx="56" cy="52" r="4" fill="#fff"/>
+  <!-- A11y text -->
+  <text x="64" y="118" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="18" fill="#fff" letter-spacing="1">A11y</text>
+</svg>

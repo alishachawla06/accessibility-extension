@@ -190,3 +190,19 @@ export const FIX_SUGGESTIONS = {
     snippet: '<input type="email" autocomplete="email">\n<input type="text" autocomplete="given-name">\n<input type="tel" autocomplete="tel">'
   }
 };
+
+// ─── Screen Reader Panel Constants ──────────────────────────────────────────
+
+// Link text that screen readers find useless (case-insensitive match)
+export const AMBIGUOUS_LINK_TEXTS = [
+  'click here', 'here', 'read more', 'learn more', 'more',
+  'more info', 'more information', 'details', 'link', 'go',
+  'continue', 'see more', 'view more', 'download', 'submit'
+];
+
+// WCAG 2.5.5 / 2.5.8 touch target thresholds (CSS px)
+export const TOUCH_TARGET = {
+  AAA: 44,   // WCAG 2.5.5 Enhanced
+  AA: 24,    // WCAG 2.5.8 Minimum
+  SPACING: 24 // Spacing exception distance
+};

@@ -1,9 +1,10 @@
 import { test, expect } from '../fixtures/extension';
-import { getInnerHtml } from '../utils/helpers';
+import { getInnerHtml, clickSubTab } from '../utils/helpers';
 
 test.describe('Text Spacing Panel', () => {
   test('should toggle text spacing on and off', async ({ panelPage, contentPage, clickNav }) => {
-    await clickNav('text-spacing');
+    await clickNav('visual');
+    await clickSubTab(panelPage, 'text-spacing');
 
     // Toggle ON
     await panelPage.click('#btn-toggle-spacing');

@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/extension';
 import { scanPanel, getInnerHtml, isVisible } from '../utils/helpers';
 
-const SCAN = { panel: 'form-labeller', btn: 'btn-scan-forms', result: '#form-labeller-list .result-item, #form-labeller-list .ax-node-row' } as const;
+const SCAN = { panel: 'content', btn: 'btn-scan-forms', result: '#form-labeller-list .result-item, #form-labeller-list .ax-node-row' } as const;
 
 test.describe('Form Labels Panel', () => {
   test('should detect orphaned form fields', async ({ panelPage, clickNav }) => {

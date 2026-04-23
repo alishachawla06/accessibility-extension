@@ -330,11 +330,63 @@ async function hideTabStops() {
   document.getElementById('tab-list').innerHTML = '';
 }
 
+// ─── Component Flow (renders picked-component results into dedicated panel) ──
+async function showComponentFlow(selector) {
+  const statsEl = document.getElementById('component-flow-stats');
+  const listEl = document.getElementById('component-flow-list');
+  const countEl = document.getElementById('count-component-focusable');
+  if (!listEl) return;
+
+  const tab = await getActiveTab();
+  const [{ result }] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: (contextSelector) => {
+      const base = 'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
+      const root = contextSelector ? (document.querySelector(contextSelector) || document) : document;
+      const els = Array.from(root.querySelectorAll(base)).filter(el => {
+        const ti = el.getAttribute('tabindex');
+        if (ti && parseInt(ti) < 0) return false;
+        if (el.disabled) return false;
+        if (el.offsetParent === null && el.getAttribute('type') !== 'hidden') return false;
+        return true;
+      });
+      return els.map((el, i) => {
+        const tag = el.tagName.toLowerCase();
+        const role = el.getAttribute('role') || '';
+        const name = el.getAttribute('aria-label') || el.textContent?.trim().slice(0, 60) || '';
+        let sel = el.id ? '#' + CSS.escape(el.id) : tag;
+        return { idx: i + 1, tag, role, name, selector: sel };
+      });
+    },
+    args: [selector]
+  });
+
+  if (!result || !result.length) {
+    listEl.innerHTML = '<div class="empty-state">No focusable elements found in this component.</div>';
+    if (statsEl) statsEl.classList.add('hidden');
+    return;
+  }
+
+  if (countEl) countEl.textContent = result.length;
+  if (statsEl) statsEl.classList.remove('hidden');
+
+  listEl.innerHTML = result.map(item => {
+    const roleBadge = item.role ? `<span class="sr-flow-role">${escapeHtml(item.role)}</span>` : '';
+    return `<div class="mkt-trail-item kb-issue-card">
+      <span class="mkt-trail-idx">${item.idx}</span>
+      <span class="mkt-trail-tag">&lt;${escapeHtml(item.tag)}&gt;</span>
+      ${roleBadge}
+      <span class="mkt-trail-name">${escapeHtml(item.name)}</span>
+    </div>`;
+  }).join('');
+}
+
 export function initTabStops() {
   document.getElementById('btn-show-tabs').addEventListener('click', () => showTabStops(false));
   document.getElementById('btn-show-flow').addEventListener('click', () => showTabStops(true));
   document.getElementById('btn-hide-tabs').addEventListener('click', hideTabStops);
 
+  // Component Flow pick button (dedicated sub-tab)
   const btnPick = document.getElementById('btn-pick-tab-component');
   if (btnPick) {
     btnPick.addEventListener('click', async () => {
@@ -347,7 +399,9 @@ export function initTabStops() {
     chrome.runtime.sendMessage({ type: 'getPickedSection', consume: true, consumerId: 'tab-stops' }, (response) => {
       if (response && response.selector && response.from === 'tab-stops') {
         pickedTabSelector = response.selector;
-        showTabStops(true, 'flat'); 
+        // Switch to component-flow sub-tab and show results
+        document.querySelector('.section-sub-tab[data-tab="component-flow"]')?.click();
+        showComponentFlow(response.selector);
       }
     });
   }

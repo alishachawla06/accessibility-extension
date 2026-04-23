@@ -1,27 +1,29 @@
 import { test, expect } from '../fixtures/extension';
 import { scanPanel, getInnerHtml, countElements, countContentOverlays } from '../utils/helpers';
 
-const SCAN = { panel: 'headings', btn: 'btn-scan-headings', result: '#heading-tree-container .ax-node-row' } as const;
+const NAV = 'structure';
+const SUB_TAB = { name: 'headings' };
+const SCAN = { btn: 'btn-scan-headings', result: '#heading-tree-container .heading-card' } as const;
 
 test.describe('Headings Panel', () => {
   test('should detect heading issues', async ({ panelPage, clickNav }) => {
-    await scanPanel(panelPage, clickNav, SCAN.panel, SCAN.btn, '#heading-stats:not(.hidden)');
+    await scanPanel(panelPage, clickNav, NAV, SCAN.btn, '#heading-stats:not(.hidden)', 10000, SUB_TAB);
 
     expect(await countElements(panelPage, SCAN.result)).toBeGreaterThanOrEqual(5);
 
     const statsHtml = await getInnerHtml(panelPage, '#heading-stats');
-    expect(statsHtml).toContain('skipped');
+    expect(statsHtml).toContain('issues');
   });
 
   test('should detect empty heading', async ({ panelPage, clickNav }) => {
-    await scanPanel(panelPage, clickNav, SCAN.panel, SCAN.btn, SCAN.result);
+    await scanPanel(panelPage, clickNav, NAV, SCAN.btn, '#heading-stats:not(.hidden)', 10000, SUB_TAB);
 
     const html = await getInnerHtml(panelPage, '#heading-tree-container');
     expect(html).toContain('empty heading');
   });
 
   test('should show and hide heading labels on page', async ({ panelPage, contentPage, clickNav }) => {
-    await scanPanel(panelPage, clickNav, SCAN.panel, SCAN.btn, SCAN.result);
+    await scanPanel(panelPage, clickNav, NAV, SCAN.btn, '#heading-stats:not(.hidden)', 10000, SUB_TAB);
 
     // Show labels
     await panelPage.click('#btn-show-heading-labels');
